@@ -9,11 +9,10 @@ const DatePickerComponent = ({style,onDateChange,placeholder,...otherProps}) => 
       <DatePicker
         style={{
           width: 350,
-          backgroundColor:colors.light,
-          borderColor:colors.light,
+          backgroundColor:colors.white,
         }}
         
-        {...otherProps}
+        placeholder={placeholder}
         format="YYYY-MM-DD"
         confirmBtnText="Confirm"
         cancelBtnText="Cancel"

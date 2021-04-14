@@ -23,11 +23,11 @@ const styles = StyleSheet.create({
     padding: 6,
     paddingLeft: 12,
     borderColor: colors.light,
-    color: '#6e6c6c',
+    color: colors.lightshade,
     backgroundColor: colors.light,
     borderColor: colors.light,
     fontSize: 15,
-    fontFamily:"inherit"
+    fontFamily:"Roboto"
   },
 });
 

@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
         marginVertical: 10,
       },
       buttonText: {
-        color: 'white',
+        color: colors.white,
         fontSize: 25,
       },
 });

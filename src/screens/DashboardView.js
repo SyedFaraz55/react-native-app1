@@ -7,9 +7,6 @@ import {
   TouchableNativeFeedback,
 } from 'react-native';
 import colors from '../config/constants/colors';
-import {H1} from '../components/H1';
-
-import Icon from 'react-native-vector-icons/FontAwesome';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons'
@@ -52,7 +49,7 @@ const DashboardView = ({navigation}) => {
         </TouchableNativeFeedback>
         <TouchableNativeFeedback
           onPress={() => {
-            navigation.navigate('Parcel');
+            navigation.navigate('Search');
           }}>
           <Feather name="search" size={30} color={colors.primary} />
         </TouchableNativeFeedback>
@@ -82,7 +79,7 @@ const styles = StyleSheet.create({
   footer: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: 'white',
+    backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'space-around',
     padding: 6,

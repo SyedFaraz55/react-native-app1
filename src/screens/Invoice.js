@@ -7,6 +7,7 @@ import {
   ScrollView,
   TouchableNativeFeedback,
 } from 'react-native';
+import Button from '../components/Button';
 import colors from '../config/constants/colors';
 import DropDown from '../components/DropDown';
 import DatePickerComponent from '../components/DatePicker';
@@ -38,23 +39,32 @@ const Invoice = () => {
     <View style={styles.container}>
       <View style={styles.section}>
         <ScrollView>
+          <View style={{marginBottom:20}}>
           <DropDown
             values={values}
-            style={{backgroundColor: colors.light, color: '#6e6c6c'}}
+            style={{backgroundColor: "white", color: '#6e6c6c'}}
             placeholder="Select Branch Name"
             onChangeItem={item => console.log(item.value)}
           />
+          </View>
+          <View style={{marginBottom:20}}>
           <DropDown
             values={values}
-            style={{backgroundColor: colors.light, color: '#6e6c6c'}}
+            style={{backgroundColor: "white", color: '#6e6c6c'}}
             placeholder="Select Branch Address"
             onChangeItem={item => console.log(item.value)}
           />
+          </View>
+        
+          <View style={{marginBottom:20}}>
 
           <InputText
             placeholder="Invoice Number"
-            style={{backgroundColor: colors.light}}
+            style={{backgroundColor: "white"}}
           />
+          </View>
+          <View style={{marginBottom:20}}>
+
           <DatePickerComponent
             date={date}
             placeholder="Invoice Received Date"
@@ -63,7 +73,11 @@ const Invoice = () => {
               setDate(date);
               console.log(date);
             }}
+            
           />
+          </View>
+          <View style={{marginBottom:20}}>
+
           <DatePickerComponent
             date={date}
             placeholder="Invoice Date"
@@ -72,10 +86,16 @@ const Invoice = () => {
               console.log(date);
             }}
           />
+          </View>
+          <View style={{marginBottom:20}}>
+
           <InputText
             placeholder="LR Number"
-            style={{backgroundColor: colors.light}}
+            style={{backgroundColor: "white"}}
           />
+          </View>
+          <View style={{marginBottom:20}}>
+
           <DatePickerComponent
             date={date}
             placeholder="LR Date"
@@ -85,31 +105,37 @@ const Invoice = () => {
               console.log(date);
             }}
           />
+          </View>
+          <View style={{marginBottom:20}}>
+
           <InputText
             placeholder="Number of parcels"
-            style={{backgroundColor: colors.light}}
+            style={{backgroundColor: "white"}}
           />
+          </View>
+          <View style={{marginBottom:20}}>
+
           <DropDown
             values={values}
-            style={{backgroundColor: colors.light, color: '#6e6c6c'}}
+            style={{backgroundColor: "white", color: '#6e6c6c'}}
             placeholder="Invoice Status"
             onChangeItem={item => console.log(item.value)}
           />
+          </View>
+          <View style={{marginBottom:20}}>
+
           <DropDown
             values={values}
-            style={{backgroundColor: colors.light, color: '#6e6c6c'}}
+            style={{backgroundColor: "white", color: '#6e6c6c'}}
             placeholder="Parcel Status"
             onChangeItem={item => console.log(item.value)}
           />
+          </View>
         </ScrollView>
       </View>
       <View style={styles.footer}>
-        <TouchableNativeFeedback onPress={() => console.log('hello')}>
-          <View style={styles.button}>
-            <Text style={styles.buttonText}>Add Invoice</Text>
-          </View>
-        </TouchableNativeFeedback>
-      </View>
+        <Button title="Add Invoice" style={{width:"100%"}} />
+      </View> 
     </View>
   );
 };
@@ -149,7 +175,7 @@ const styles = StyleSheet.create({
     marginVertical: 30,
   },
   buttonText: {
-    color: 'white',
+    color: colors.white,
     fontSize: 20,
   },
 });

@@ -3,19 +3,18 @@ import {
   View,
   StyleSheet,
   TextInput,
-  Text,
   TouchableNativeFeedback,
   ActivityIndicator,
 } from 'react-native';
 import colors from '../config/constants/colors';
 import {H1} from '../components/H1';
 import InputText from '../components/InputText';
-import Button from '../components/Button';
-
+// import Button from '../components/Button';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import {Formik} from 'formik';
+import {Text, Input, Button} from '@ui-kitten/components';
 
 const Login = ({navigation}) => {
-
   const [isLoading, setLoading] = useState(false);
 
   const authenticate = () => {
@@ -23,40 +22,44 @@ const Login = ({navigation}) => {
     setTimeout(() => {
       setLoading(false);
       navigation.navigate('DashboardView');
-    }, 3000);
+    }, 1000);
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.form}>
-        <H1 size={30} color={colors.primary} mt={10}>
-          Login
-        </H1>
+        <View style={styles.header}>
+          <MaterialIcon name="dashboard" size={40} color={colors.primary} />
+          <Text style={{marginLeft: 6}} category="h1">
+            Login
+          </Text>
+        </View>
         <Formik
           initialValues={{username: '', password: '', clientCode: ''}}
           onSubmit={values => console.log(values)}>
           {({handleSubmit, handleChange, errors}) => (
             <>
-              <InputText
-                style={{width: '80%', marginBottom: 14}}
+              <Input
                 placeholder="Username"
-                onChangeText={handleChange('username')}
+                size="large"
+                style={{width: '80%', marginBottom: 10}}
               />
-              <InputText
-                style={{width: '80%', marginBottom: 14,fontFamily:"inherit"}}
+              <Input
                 placeholder="Password"
+                size="large"
+                style={{width: '80%', marginBottom: 10}}
                 secureTextEntry
-                onChangeText={handleChange('password')}
               />
-              <InputText
-                style={{width: '80%', marginBottom: 14}}
+              <Input
                 placeholder="Client Code"
-                onChangeText={handleChange('clientCode')}
+                size="large"
+                style={{width: '80%', marginBottom: 10}}
               />
-              <Button title="Login" onPress={()=> {
-                 handleSubmit()
-                 authenticate()
-              }} />
+              <Button
+                onPress={() => navigation.navigate('DashboardView')}
+                style={{width: '80%', backgroundColor: colors.primary}}>
+                LOGIN
+              </Button>
             </>
           )}
         </Formik>
@@ -69,7 +72,13 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     width: '100%',
-    backgroundColor: colors.secondary,
+    backgroundColor: colors.white,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
   },
   form: {
     flex: 1,
