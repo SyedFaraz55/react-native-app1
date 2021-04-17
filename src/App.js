@@ -5,21 +5,17 @@ import {createDrawerNavigator } from '@react-navigation/drawer'
 import Login from './screens/Login';
 import DashboardView from './screens/DashboardView';
 import Invoice from './screens/Invoice'
-import Dashboard from './screens/Dashboard';
+
 import Parcel from './screens/Parcel';
 import Search from './screens/Search';
 import * as eva from '@eva-design/eva';
-import store from './store';
-import { ApplicationProvider, Layout, Text } from '@ui-kitten/components';
+
+import { ApplicationProvider } from '@ui-kitten/components';
 const Stack  = createStackNavigator();
-const Drawer = createDrawerNavigator();
+
 
 const App = ()=> {
-  store.dispatch({type:"LOGIN",payload:{
-    user:"raju",
-    id:1
-  }})
-  console.log(store.getState())
+ 
   return (
      <NavigationContainer>
        <Stack.Navigator>

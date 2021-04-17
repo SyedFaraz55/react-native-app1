@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,16 +9,42 @@ import {
 import colors from '../config/constants/colors';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons'
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import DropDown from '../components/DropDown';
 
 
-const DashboardView = ({navigation}) => {
+const DashboardView = ({navigation, route}) => {
+  const {userCompanyUser} = route.params.data
+  const values = userCompanyUser.map(ele => (
+    {
+      label:ele.companyCode,
+      value:ele.companyId
+    }
+  ))
+  
+
+  
+  
   return (
     <View style={styles.container}>
-     <View style={styles.header}>
-        <MaterialIcon name="dashboard" size={30} color="#fff" />
-        <Text style={{fontSize:20,color:"#fff", marginLeft:10}} >Dashboard</Text>
-     </View>
+      <View style={styles.header}>
+        <MaterialIcon name="dashboard" size={30} color={colors.primary} />
+        <Text style={{fontSize: 20, color: '#000', marginLeft: 10}}>
+          Dashboard
+        </Text>
+        <View style={{marginLeft:50}}>
+        {values.length === 1 ?
+        <View style={styles.rSec}>
+          <Text style={styles.rtop}>Company</Text>
+          <Text style={styles.rsub}>{values[0].label}</Text>
+        </View>:<DropDown
+            items={values}
+            style={{backgroundColor: "white", color: '#6e6c6c',width:"50%"}}
+            placeholder="Select Company"
+            onChangeItem={item => console.log(item.value)}
+          />}
+        </View>
+      </View>
       <View style={styles.section}>
         <Image
           source={require('../res/noData.png')}
@@ -37,7 +63,7 @@ const DashboardView = ({navigation}) => {
         </TouchableNativeFeedback>
         <TouchableNativeFeedback
           onPress={() => {
-            navigation.navigate('Invoice');
+            navigation.navigate('Invoice',{data:route.params.data});
           }}>
           <IonIcon name="create" size={30} color={colors.primary} />
         </TouchableNativeFeedback>
@@ -61,14 +87,14 @@ const DashboardView = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.secondary,
   },
   header: {
     flex: 1,
-    flexDirection:"row",
-    backgroundColor: colors.primary,
-    alignItems:"center",
-    paddingLeft: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft:20,
+    paddingTop:10,
+
   },
   section: {
     flex: 12,
@@ -86,6 +112,20 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     borderTopLeftRadius: 20,
   },
+  rSec:{
+    flex:1,
+    alignItems:"flex-end",
+    justifyContent:"center",
+    marginLeft:80
+    
+  },
+  rtop:{
+    fontSize:12,
+    fontWeight:'bold'
+  },
+  rsub:{
+    
+  }
 });
 
 export default DashboardView;

@@ -5,24 +5,34 @@ import {
   TextInput,
   TouchableNativeFeedback,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import colors from '../config/constants/colors';
-import {H1} from '../components/H1';
-import InputText from '../components/InputText';
-// import Button from '../components/Button';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import {Formik} from 'formik';
 import {Text, Input, Button} from '@ui-kitten/components';
+import axios from 'axios';
 
 const Login = ({navigation}) => {
-  const [isLoading, setLoading] = useState(false);
+  const authenticate = values => {
 
-  const authenticate = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      navigation.navigate('DashboardView');
-    }, 1000);
+    const {Username, Password, ClientCode} = values;
+    
+    axios.post('http://test.picktech.in/api/Account/Authenticate', {
+      ClientCode: ClientCode.toUpperCase(),
+      Username,
+      Password,
+    })
+    .then(function (response) {
+      if(response.status === 200) {
+        const data = response.data;
+        navigation.navigate("DashboardView",{data})
+      } 
+    })
+    .catch(function (error) {
+      Alert.alert("Error","Invalid Credentials")
+    });
+   
   };
 
   return (
@@ -35,28 +45,31 @@ const Login = ({navigation}) => {
           </Text>
         </View>
         <Formik
-          initialValues={{username: '', password: '', clientCode: ''}}
-          onSubmit={values => console.log(values)}>
+          initialValues={{Username: '', Password: '', ClientCode: ''}}
+          onSubmit={values => authenticate(values)}>
           {({handleSubmit, handleChange, errors}) => (
             <>
               <Input
                 placeholder="Username"
                 size="large"
                 style={{width: '80%', marginBottom: 10}}
+                onChangeText={handleChange('Username')}
               />
               <Input
                 placeholder="Password"
                 size="large"
                 style={{width: '80%', marginBottom: 10}}
                 secureTextEntry
+                onChangeText={handleChange('Password')}
               />
               <Input
                 placeholder="Client Code"
                 size="large"
                 style={{width: '80%', marginBottom: 10}}
+                onChangeText={handleChange('ClientCode')}
               />
               <Button
-                onPress={() => navigation.navigate('DashboardView')}
+                onPress={handleSubmit}
                 style={{width: '80%', backgroundColor: colors.primary}}>
                 LOGIN
               </Button>
