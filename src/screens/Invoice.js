@@ -18,7 +18,8 @@ import axios from 'axios';
 
 const Invoice = ({route}) => {
   const USER_ID = route.params.data.id;
-  const [data, setData] = useState();
+  const [data, setData] = useState([]);
+  console.log(data)
   const [moreFields, setFields] = useState(false);
   const [status, setStatus] = useState([]);
   const [invoiceReceiveDate, setInvoiceReceiveDate] = useState();
@@ -36,6 +37,18 @@ const Invoice = ({route}) => {
     value: ele.branchId,
   }));
 
+let branches = []
+  data.forEach(item => {
+        item.branchCommunication.map(contact => {
+          const {addressLine1,addressLine2,cityId,id} = contact.communication.address
+          branches.push( {
+            value:id,
+            label:addressLine1 + " " + addressLine2 + " " + cityId
+          })
+        })
+      })
+
+
   const fetchData = item => {
     const {label, value} = item;
     // make this 7 dynamic
@@ -43,9 +56,9 @@ const Invoice = ({route}) => {
     axios
       .get(API)
       .then(response => {
-     
+         setData(response.data)
+         setFields(true);
          
-         console.log(response.data);
       })
       .catch(err => console.log(err));
   };
@@ -197,11 +210,14 @@ const Invoice = ({route}) => {
 
                     {moreFields ? (
                       <View>
+                         <Text style={styles.text} category="label">
+                        Branch Communication
+                      </Text>
                         <DropDown
-                          values={values}
+                          values={branches}
                           style={{backgroundColor: 'white', color: '#6e6c6c'}}
                           placeholder="Branch Communicators"
-                          onChangeItem={item => fetchData(item)}
+                          onChangeItem={item => console.log(item.value)}
                         />
                       </View>
                     ) : null}
