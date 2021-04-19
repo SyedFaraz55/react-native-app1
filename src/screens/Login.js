@@ -26,6 +26,7 @@ const Login = ({navigation}) => {
     .then(function (response) {
       if(response.status === 200) {
         const data = response.data;
+        console.log(data,'global data')
         navigation.navigate("DashboardView",{data})
       } 
     })
@@ -45,7 +46,7 @@ const Login = ({navigation}) => {
           </Text>
         </View>
         <Formik
-          initialValues={{Username: '', Password: '', ClientCode: ''}}
+          initialValues={{Username: 'raju', Password: 'raju', ClientCode: 'kusumanchi'}}
           onSubmit={values => authenticate(values)}>
           {({handleSubmit, handleChange, errors}) => (
             <>

@@ -69,7 +69,7 @@ const DashboardView = ({navigation, route}) => {
         </TouchableNativeFeedback>
         <TouchableNativeFeedback
           onPress={() => {
-            navigation.navigate('Parcel');
+            navigation.navigate('Parcel',{data:route.params.data});
           }}>
           <Feather name="package" size={30} color={colors.primary} />
         </TouchableNativeFeedback>
