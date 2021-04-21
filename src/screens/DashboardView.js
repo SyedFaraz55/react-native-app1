@@ -14,13 +14,16 @@ import DropDown from '../components/DropDown';
 
 
 const DashboardView = ({navigation, route}) => {
-  const {userCompanyUser} = route.params.data
+  const {userCompanyUser} = route.params.data;
+  const [company,setCompany] = useState();
   const values = userCompanyUser.map(ele => (
     {
       label:ele.companyCode,
       value:ele.companyId
     }
   ))
+
+
   
 
   
@@ -41,7 +44,7 @@ const DashboardView = ({navigation, route}) => {
             items={values}
             style={{backgroundColor: "white", color: '#6e6c6c',width:"50%"}}
             placeholder="Select Company"
-            onChangeItem={item => console.log(item.value)}
+            onChangeItem={item => setCompany(item)}
           />}
         </View>
       </View>
@@ -63,7 +66,7 @@ const DashboardView = ({navigation, route}) => {
         </TouchableNativeFeedback>
         <TouchableNativeFeedback
           onPress={() => {
-            navigation.navigate('Invoice',{data:route.params.data});
+            navigation.navigate('Invoice',{data:route.params.data,company:company ?company :  values[0]});
           }}>
           <IonIcon name="create" size={30} color={colors.primary} />
         </TouchableNativeFeedback>

@@ -71,7 +71,7 @@ const Login = ({navigation}) => {
               />
               <Button
                 onPress={handleSubmit}
-                style={{width: '80%', backgroundColor: colors.primary}}>
+                style={{width: '80%'}}>
                 LOGIN
               </Button>
             </>

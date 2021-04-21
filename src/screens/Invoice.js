@@ -17,17 +17,21 @@ import {Input, Text, Datepicker, Layout} from '@ui-kitten/components';
 import axios from 'axios';
 
 const Invoice = ({route}) => {
+
   const USER_ID = route.params.data.id;
+  const {value:companyName,label} = route.params.company;
   const [data, setData] = useState([]);
   let branches = [];
   let suppliers = [];
-  let supplierCommunications = [];
+  // let supplierCommunications = [];
   let transporter = [];
+  const [supplierCommunications,setSuppliers] = useState([])
   let transporterCommunications = [];
-  const [branchCommunication, setBranchCommunication] = useState([]);
+
+  // const [branchCommunication, setBranchCommunication] = useState([]);
 
   data.forEach(item => {
-    // for branches
+    
     item.branchCommunication.map(item => {
       const {
         addressLine1,
@@ -75,10 +79,7 @@ const Invoice = ({route}) => {
           cityId,
           id,
         } = communication.communication.address;
-        supplierCommunications.push({
-          value: id,
-          label: addressLine1 + ' ' + addressLine2 + ' ' + cityId,
-        });
+        
       });
       suppliers.push({
         value: id,
@@ -100,14 +101,41 @@ const Invoice = ({route}) => {
     value: ele.branchId,
   }));
 
+
+  const filterSupplierCommunications = key => {
+    let final = []
+    
+
+      let result;
+      data.forEach(item => {
+        result = item.branchSupplier.filter(item => {
+          return item.supplier.id == key
+        })
+      })
+  
+       result.map(item => {
+        item.supplier.supplierCommunication.map(item => {
+          const {addressLine1,addressLine2,cityId,id} = item.communication.address
+          final.push({
+            value:id,
+            label:addressLine1 + " " + addressLine2 + " " + cityId
+          })
+        })
+      })
+
+
+
+    
+    setSuppliers(final)
+  }
+
   const fetchData = () => {
-    // make this 7 dynamic
-    const API = `http://test.picktech.in/api/Assignment/GetBranchTSSByUser?userId=${USER_ID}&cmpID=7`;
+    
+    const API = `http://test.picktech.in/api/Assignment/GetBranchTSSByUser?userId=${USER_ID}&cmpID=${companyName}`;
     axios
       .get(API)
       .then(response => {
         setData(response.data);
-        console.log(response);
       })
       .catch(err => console.log(err));
   };
@@ -224,12 +252,14 @@ const Invoice = ({route}) => {
                     />
                   </View>
                   {values.length === 1 ? (
-                     <View style={{padding:4}}>
-                       <Text style={styles.text} category="label">
-                        Branch code
-                     </Text>
-                     <Text style={{marginLeft:6,marginTop:10}}>{values[0].label}</Text>
-                     </View>
+                    //  <View style={{padding:4}}>
+                    //    <Text style={styles.text} category="label">
+                    //     Branch code
+                    //  </Text>
+                    //  <Text style={{marginLeft:6,marginTop:10}}>{values[0].label}</Text>
+                    //  </View>
+
+                    null
             
                   ) : (
                     <View>
@@ -245,18 +275,26 @@ const Invoice = ({route}) => {
                     </View>
                   )}
 
-                  <View>
-                    <Text style={styles.text} category="label">
-                      Branch Communication
-                    </Text>
-                    <DropDown
-                      values={branches}
-                      style={{backgroundColor: 'white', color: '#6e6c6c'}}
-                      placeholder="Branch Communication"
-                      onChangeItem={value => console.log(value.value)}
-                    />
-                  </View>
-                  <View>
+                  {branches.length === 1 ? 
+                //   <View style={{padding:4}}>
+                //   <Text style={styles.text} category="label">
+                //    Branch code
+                // </Text>
+                // <Text style={{marginLeft:6,marginTop:10}}>{branches[0].label}</Text>
+                // </View>
+                null
+                : <View>
+                <Text style={styles.text} category="label">
+                  Branch Communication
+                </Text>
+                <DropDown
+                  values={branches}
+                  style={{backgroundColor: 'white', color: '#6e6c6c'}}
+                  placeholder="Branch Communication"
+                  onChangeItem={value => console.log(value.value)}
+                />
+              </View>}
+                  {suppliers.length === 1 ? null : <View>
                     <Text style={styles.text} category="label">
                       Supplier Code
                     </Text>
@@ -264,10 +302,10 @@ const Invoice = ({route}) => {
                       values={suppliers}
                       style={{backgroundColor: 'white', color: '#6e6c6c'}}
                       placeholder="Supplier Code"
-                      onChangeItem={value => console.log(value)}
+                      onChangeItem={value => filterSupplierCommunications(value.value)}
                     />
-                  </View>
-                  <View>
+                  </View>}
+                  {supplierCommunications.length > 0 ?<View>
                     <Text style={styles.text} category="label">
                       Supplier Communications
                     </Text>
@@ -277,7 +315,7 @@ const Invoice = ({route}) => {
                       placeholder="Supplier Communication"
                       onChangeItem={value => console.log(value)}
                     />
-                  </View>
+                  </View>:null}
                   <View>
                     <Text style={styles.text} category="label">
                       Transporter Code
@@ -285,7 +323,7 @@ const Invoice = ({route}) => {
                     <DropDown
                       values={transporter}
                       style={{backgroundColor: 'white', color: '#6e6c6c'}}
-                      placeholder="Supplier Communication"
+                      placeholder="Transporter Code"
                       onChangeItem={value => console.log(value)}
                     />
                   </View>
