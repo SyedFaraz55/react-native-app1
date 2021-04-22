@@ -8,37 +8,49 @@ import Button from '../components/Button';
 import colors from '../config/constants/colors';
 import axios from 'axios';
 import {Text} from '@ui-kitten/components';
+import {setNestedObjectValues} from 'formik';
 
 const Parcel = ({route}) => {
   const USER_ID = route.params.data.id;
-  let branches = [];
-  let sites = [];
-  let siteCommunications = [];
+  let branches = []
+  let sites = []
+  const [siteCommunications,setSiteCommunications] = useState([]);
   const [date, setDate] = useState('');
+  const [siteName,setSiteName] = useState(undefined);
   const [data, setData] = useState([]);
   const [status, setStatus] = useState([]);
+  const [values, setValues] = useState([]);
   const {userBranchUser} = route.params.data;
+  
 
-  const values = userBranchUser.map(ele => ({
-    label: ele.branchCode,
-    value: ele.branchId,
-  }));
+  const branchUser = () => {
+    const branchuser = userBranchUser.map(ele => ({
+      label: ele.branchCode,
+      value: ele.branchId,
+    }));
+
+    
+    setValues(branchuser);
+  };
+
+  
+    data.forEach(item => {
+       item.branchCommunication.map(item => {
+        const {
+          addressLine1,
+          addressLine2,
+          cityId,
+          id,
+        } = item.communication.address;
+        branches.push( {
+          value: id,
+          label: addressLine1 + ' ' + addressLine2 + ' ' + cityId,
+        });
+      });
+    })
+
 
   data.forEach(item => {
-    // for branches
-    item.branchCommunication.map(item => {
-      const {
-        addressLine1,
-        addressLine2,
-        cityId,
-        id,
-      } = item.communication.address;
-      branches.push({
-        value: id,
-        label: addressLine1 + ' ' + addressLine2 + ' ' + cityId,
-      });
-    });
-
     // for site
     item.branchSite.map(item => {
       const {id, code} = item.site;
@@ -46,22 +58,33 @@ const Parcel = ({route}) => {
         value: id,
         label: code,
       });
-
-      // for site address
-      item.site.siteCommunication.map(item => {
-        const {
-          addressLine1,
-          addressLine2,
-          cityId,
-          id,
-        } = item.communication.address;
-        siteCommunications.push({
-          value: id,
-          label: addressLine1 + ' ' + addressLine2 + ' ' + cityId,
-        });
-      });
     });
   });
+
+
+
+
+  const filterSites = key => {
+    let results = []
+    let final = [];
+    data.forEach(item => {
+      results = item.branchSite.filter(item => {
+        return item.site.id == key 
+      })
+    })
+   results.map(item => {
+     final = item.site.siteCommunication.map(communication => {
+       
+       const {id,addressLine1,addressLine2,cityId} = communication.communication.address
+       return {
+         value:id,
+         label:addressLine1 + " " + addressLine2 + " "  + cityId
+       }
+     })
+   })
+
+   setSiteCommunications(final)
+  }
 
   const fetchStatus = () => {
     axios
@@ -91,22 +114,15 @@ const Parcel = ({route}) => {
 
   useEffect(() => {
     fetchData();
+    branchUser();
+    
     fetchStatus();
   }, []);
   return (
     <View style={styles.container}>
       <ScrollView>
         <View style={styles.section}>
-          {values.length === 1 ? (
-            <View style={{alignItems:"flex-start"}}>
-              <Text style={styles.text} category="label">
-                Branch code
-              </Text>
-              <Text style={{marginLeft: 6, marginTop: 10}}>
-                {values[0].label}
-              </Text>
-            </View>
-          ) : (
+          {values.length === 1 ? null : (
             <View>
               <Text style={styles.text} category="label">
                 Branch Code
@@ -119,29 +135,34 @@ const Parcel = ({route}) => {
               />
             </View>
           )}
+          {branches.length === 1 ? null : (
+            <View style={{marginBottom: 20}}>
+              <Text style={styles.text} category="label">
+                Branch Communication
+              </Text>
+              <DropDown
+                values={branches}
+                style={{backgroundColor: 'white', color: '#6e6c6c'}}
+                placeholder="Branch Communication"
+                onChangeItem={item => console.log(item.value)}
+              />
+            </View>
+          )}
           <View style={{marginBottom: 20}}>
             <Text style={styles.text} category="label">
-              Branch Communication
-            </Text>
-            <DropDown
-              values={branches}
-              style={{backgroundColor: 'white', color: '#6e6c6c'}}
-              placeholder="Branch Communication"
-              onChangeItem={item => console.log(item.value)}
-            />
-          </View>
-          <View style={{marginBottom: 20}}>
-            <Text style={styles.text} category="label">
-              Site Name
+              Site Communication
             </Text>
             <DropDown
               values={sites}
               style={{backgroundColor: 'white', color: '#6e6c6c'}}
               placeholder="Site Name"
-              onChangeItem={item => console.log(item.value)}
+              onChangeItem={item => {
+                filterSites(item.value)
+                setSiteName(item.value)
+              }}
             />
           </View>
-          <View style={{marginBottom: 20}}>
+         {siteName === undefined ? null :  siteCommunications.length === 1 ? null : <View style={{marginBottom: 20}}>
             <Text style={styles.text} category="label">
               Site Communication
             </Text>
@@ -152,7 +173,7 @@ const Parcel = ({route}) => {
               placeholder="Site Communication"
               onChangeItem={item => console.log(item.value)}
             />
-          </View>
+          </View>}
           <View style={{marginBottom: 20, width: '90%'}}>
             <Text style={styles.text} category="label">
               LR Number
@@ -165,10 +186,20 @@ const Parcel = ({route}) => {
           </View>
           <View style={{marginBottom: 20, width: '90%'}}>
             <Text style={styles.text} category="label">
-              Number of Parcels
+              Number of Parcels in LR
             </Text>
             <InputText
-              placeholder="Number of parcels"
+              placeholder="Number of Parcels in LR"
+              style={{backgroundColor: 'white'}}
+              onChangeText={text => console.log(text)}
+            />
+          </View>
+          <View style={{marginBottom: 20, width: '90%'}}>
+            <Text style={styles.text} category="label">
+              Number of Parcels Received
+            </Text>
+            <InputText
+              placeholder="Number of Parcels Received"
               style={{backgroundColor: 'white'}}
               onChangeText={text => console.log(text)}
             />
@@ -197,17 +228,7 @@ const Parcel = ({route}) => {
               onChangeItem={item => console.log(item.value)}
             />
           </View>
-          <View style={{marginBottom: 20}}>
-            <Text style={styles.text} category="label">
-              Remarks
-            </Text>
-            <DropDown
-              values={values}
-              style={{backgroundColor: 'white', color: '#6e6c6c'}}
-              placeholder="Remarks"
-              onChangeItem={item => console.log(item.value)}
-            />
-          </View>
+          
         </View>
         <View style={styles.footer}>
           <Button title="Add Parcel" style={{width: '100%'}} />

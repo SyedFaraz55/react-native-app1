@@ -267,7 +267,7 @@ const Invoice = ({route}) => {
                       onChangeItem={value => setInvoiceStatus(value.value)}
                     />
                   </View>
-                  <View>
+                  {/* <View>
                     <Text style={styles.text} category="label">
                       Parcel Status
                     </Text>
@@ -277,7 +277,7 @@ const Invoice = ({route}) => {
                       placeholder="Parcel Status"
                       onChangeItem={value => setParcelStatus(value.value)}
                     />
-                  </View>
+                  </View> */}
                   {values.length === 1 ? //     Branch code //    <Text style={styles.text} category="label"> //  <View style={{padding:4}}>
                   //  </Text>
                   //  <Text style={{marginLeft:6,marginTop:10}}>{values[0].label}</Text>
