@@ -17,21 +17,20 @@ import {Input, Text, Datepicker, Layout} from '@ui-kitten/components';
 import axios from 'axios';
 
 const Invoice = ({route}) => {
-
   const USER_ID = route.params.data.id;
-  const {value:companyName,label} = route.params.company;
+  const {value: companyName, label} = route.params.company;
   const [data, setData] = useState([]);
   let branches = [];
   let suppliers = [];
   // let supplierCommunications = [];
   let transporter = [];
-  const [supplierCommunications,setSuppliers] = useState([])
-  let transporterCommunications = [];
+  const [supplierCommunications, setSuppliers] = useState([]);
+  const [transporterCommunications, setTransporters] = useState([]);
+  // let transporterCommunications = [];
 
   // const [branchCommunication, setBranchCommunication] = useState([]);
 
   data.forEach(item => {
-    
     item.branchCommunication.map(item => {
       const {
         addressLine1,
@@ -53,20 +52,20 @@ const Invoice = ({route}) => {
       });
     });
 
-    item.branchTransporter.map(item => {
-      item.transporter.transporterCommunication.forEach(item => {
-        const {
-          addressLine1,
-          addressLine2,
-          cityId,
-          id,
-        } = item.communication.address;
-        transporterCommunications.push({
-          value: id,
-          label: addressLine1 + ' ' + addressLine2 + ' ' + cityId,
-        });
-      });
-    });
+    // item.branchTransporter.map(item => {
+    //   item.transporter.transporterCommunication.forEach(item => {
+    //     const {
+    //       addressLine1,
+    //       addressLine2,
+    //       cityId,
+    //       id,
+    //     } = item.communication.address;
+    //     transporterCommunications.push({
+    //       value: id,
+    //       label: addressLine1 + ' ' + addressLine2 + ' ' + cityId,
+    //     });
+    //   });
+    // });
   });
 
   data.forEach(item => {
@@ -79,7 +78,6 @@ const Invoice = ({route}) => {
           cityId,
           id,
         } = communication.communication.address;
-        
       });
       suppliers.push({
         value: id,
@@ -101,36 +99,65 @@ const Invoice = ({route}) => {
     value: ele.branchId,
   }));
 
-
   const filterSupplierCommunications = key => {
-    let final = []
-    
+    let final = [];
 
-      let result;
-      data.forEach(item => {
-        result = item.branchSupplier.filter(item => {
-          return item.supplier.id == key
-        })
-      })
-  
-       result.map(item => {
-        item.supplier.supplierCommunication.map(item => {
-          const {addressLine1,addressLine2,cityId,id} = item.communication.address
-          final.push({
-            value:id,
-            label:addressLine1 + " " + addressLine2 + " " + cityId
-          })
-        })
-      })
+    console.log(key);
+    let result;
+    data.forEach(item => {
+      result = item.branchSupplier.filter(item => {
+        return item.supplier.id == key;
+      });
+    });
 
+    result.map(item => {
+      item.supplier.supplierCommunication.map(item => {
+        const {
+          addressLine1,
+          addressLine2,
+          cityId,
+          id,
+        } = item.communication.address;
+        final.push({
+          value: id,
+          label: addressLine1 + ' ' + addressLine2 + ' ' + cityId,
+        });
+      });
+    });
 
+    setSuppliers(final);
+  };
 
-    
-    setSuppliers(final)
-  }
+  const filterTransportCommunications = key => {
+    console.log(key);
+    let final = [];
 
+    let result;
+    data.forEach(item => {
+      result = item.branchTransporter.filter(item => {
+        return item.transporter.id == key;
+      });
+    });
+
+    console.log(result, 'results');
+    result.map(item => {
+      item.transporter.transporterCommunication.map(item => {
+        const {
+          addressLine1,
+          addressLine2,
+          cityId,
+          id,
+        } = item.communication.address;
+        final.push({
+          value: id,
+          label: addressLine1 + ' ' + addressLine2 + ' ' + cityId,
+        });
+      });
+    });
+
+    setTransporters(final);
+  };
   const fetchData = () => {
-    
     const API = `http://test.picktech.in/api/Assignment/GetBranchTSSByUser?userId=${USER_ID}&cmpID=${companyName}`;
     axios
       .get(API)
@@ -251,17 +278,12 @@ const Invoice = ({route}) => {
                       onChangeItem={value => setParcelStatus(value.value)}
                     />
                   </View>
-                  {values.length === 1 ? (
-                    //  <View style={{padding:4}}>
-                    //    <Text style={styles.text} category="label">
-                    //     Branch code
-                    //  </Text>
-                    //  <Text style={{marginLeft:6,marginTop:10}}>{values[0].label}</Text>
-                    //  </View>
+                  {values.length === 1 ? //     Branch code //    <Text style={styles.text} category="label"> //  <View style={{padding:4}}>
+                  //  </Text>
+                  //  <Text style={{marginLeft:6,marginTop:10}}>{values[0].label}</Text>
+                  //  </View>
 
-                    null
-            
-                  ) : (
+                  null : (
                     <View>
                       <Text style={styles.text} category="label">
                         Branch Code
@@ -275,69 +297,79 @@ const Invoice = ({route}) => {
                     </View>
                   )}
 
-                  {branches.length === 1 ? 
-                //   <View style={{padding:4}}>
-                //   <Text style={styles.text} category="label">
-                //    Branch code
-                // </Text>
-                // <Text style={{marginLeft:6,marginTop:10}}>{branches[0].label}</Text>
-                // </View>
-                null
-                : <View>
-                <Text style={styles.text} category="label">
-                  Branch Communication
-                </Text>
-                <DropDown
-                  values={branches}
-                  style={{backgroundColor: 'white', color: '#6e6c6c'}}
-                  placeholder="Branch Communication"
-                  onChangeItem={value => console.log(value.value)}
-                />
-              </View>}
-                  {suppliers.length === 1 ? null : <View>
-                    <Text style={styles.text} category="label">
-                      Supplier Code
-                    </Text>
-                    <DropDown
-                      values={suppliers}
-                      style={{backgroundColor: 'white', color: '#6e6c6c'}}
-                      placeholder="Supplier Code"
-                      onChangeItem={value => filterSupplierCommunications(value.value)}
-                    />
-                  </View>}
-                  {supplierCommunications.length > 0 ?<View>
-                    <Text style={styles.text} category="label">
-                      Supplier Communications
-                    </Text>
-                    <DropDown
-                      values={supplierCommunications}
-                      style={{backgroundColor: 'white', color: '#6e6c6c'}}
-                      placeholder="Supplier Communication"
-                      onChangeItem={value => console.log(value)}
-                    />
-                  </View>:null}
-                  <View>
-                    <Text style={styles.text} category="label">
-                      Transporter Code
-                    </Text>
-                    <DropDown
-                      values={transporter}
-                      style={{backgroundColor: 'white', color: '#6e6c6c'}}
-                      placeholder="Transporter Code"
-                      onChangeItem={value => console.log(value)}
-                    />
-                  </View>
-                  <View>
-                    <Text style={styles.text} category="label">
-                      Transporter Communication
-                    </Text>
-                    <DropDown
-                      values={transporterCommunications}
-                      style={{backgroundColor: 'white', color: '#6e6c6c'}}
-                      placeholder="Transporter Communication"
-                      onChangeItem={value => console.log(value)}
-                    />
-                  </View>
+                  {branches.length === 1 ? //    Branch code //   <Text style={styles.text} category="label"> //   <View style={{padding:4}}>
+                  // </Text>
+                  // <Text style={{marginLeft:6,marginTop:10}}>{branches[0].label}</Text>
+                  // </View>
+                  null : (
+                    <View>
+                      <Text style={styles.text} category="label">
+                        Branch Communication
+                      </Text>
+                      <DropDown
+                        values={branches}
+                        style={{backgroundColor: 'white', color: '#6e6c6c'}}
+                        placeholder="Branch Communication"
+                        onChangeItem={value => console.log(value.value)}
+                      />
+                    </View>
+                  )}
+                  {suppliers.length === 1 ? null : (
+                    <View>
+                      <Text style={styles.text} category="label">
+                        Supplier Code
+                      </Text>
+                      <DropDown
+                        values={suppliers}
+                        style={{backgroundColor: 'white', color: '#6e6c6c'}}
+                        placeholder="Supplier Code"
+                        onChangeItem={value =>
+                          filterSupplierCommunications(value.value)
+                        }
+                      />
+                    </View>
+                  )}
+                  {supplierCommunications.length > 0 ? (
+                    <View>
+                      <Text style={styles.text} category="label">
+                        Supplier Communications
+                      </Text>
+                      <DropDown
+                        values={supplierCommunications}
+                        style={{backgroundColor: 'white', color: '#6e6c6c'}}
+                        placeholder="Supplier Communication"
+                        onChangeItem={value => console.log(value)}
+                      />
+                    </View>
+                  ) : null}
+                  {transporter.length === 1 ? null : (
+                    <View>
+                      <Text style={styles.text} category="label">
+                        Transporter Code
+                      </Text>
+                      <DropDown
+                        values={transporter}
+                        style={{backgroundColor: 'white', color: '#6e6c6c'}}
+                        placeholder="Transporter Code"
+                        onChangeItem={value =>
+                          filterTransportCommunications(value.value)
+                        }
+                      />
+                    </View>
+                  )}
+                  {transporterCommunications.length === 0 ? null : (
+                    <View>
+                      <Text style={styles.text} category="label">
+                        Transporter Communication
+                      </Text>
+                      <DropDown
+                        values={transporterCommunications}
+                        style={{backgroundColor: 'white', color: '#6e6c6c'}}
+                        placeholder="Transporter Communication"
+                        onChangeItem={value => console.log(value.value)}
+                      />
+                    </View>
+                  )}
                 </View>
 
                 <View style={styles.footer}>
