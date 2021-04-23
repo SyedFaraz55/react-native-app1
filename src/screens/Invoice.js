@@ -5,6 +5,7 @@ import {
   TextInput,
   ScrollView,
   TouchableNativeFeedback,
+  Alert,
 } from 'react-native';
 import Button from '../components/Button';
 import colors from '../config/constants/colors';
@@ -18,14 +19,38 @@ import axios from 'axios';
 
 const Invoice = ({route}) => {
   const USER_ID = route.params.data.id;
-  const {value: companyName, label} = route.params.company;
+  const {clientId} = route.params.data
+  const {value: companyId, label} = route.params.company;
+
   const [data, setData] = useState([]);
   let branches = [];
   let suppliers = [];
   // let supplierCommunications = [];
   let transporter = [];
   const [supplierCommunications, setSuppliers] = useState([]);
+  const [supplierCode, setSupplierCode] = useState();
+  const [supplierCommunication, setSupplierCommunication] = useState();
   const [transporterCommunications, setTransporters] = useState([]);
+  const [transportCode, setTransportCode] = useState();
+  const [transporterCommunication, setTransportCommunication] = useState();
+  
+  const [LRNdate,setLRNdate] = useState('');
+  const [IRDate,setIRDate] = useState('')
+  const [Idate,setIDate] = useState('');
+
+  let month = [];
+  month[0] = 'Jan';
+  month[1] = 'Feb';
+  month[2] = 'Mar';
+  month[3] = 'Apr';
+  month[4] = 'May';
+  month[5] = 'Jun';
+  month[6] = 'Jul';
+  month[7] = 'Aug';
+  month[8] = 'Sep';
+  month[9] = 'Oct';
+  month[10] = 'Nov';
+  month[11] = 'Dec';
   // let transporterCommunications = [];
 
   // const [branchCommunication, setBranchCommunication] = useState([]);
@@ -68,6 +93,17 @@ const Invoice = ({route}) => {
     // });
   });
 
+  const [parcels,setParcels] = useState(0);
+
+  const convertDate = (date) => {
+    const dateArr = date.toString().split(' ').slice(1, 4);
+
+    const finalDate = `${dateArr[2]}-${month.indexOf(dateArr[0]) + 1}-${dateArr[1]}`
+ 
+    return finalDate
+    
+  };
+
   data.forEach(item => {
     item.branchSupplier.map(item => {
       const {id, code} = item.supplier;
@@ -88,16 +124,43 @@ const Invoice = ({route}) => {
 
   const [status, setStatus] = useState([]);
   const [invoiceReceiveDate, setInvoiceReceiveDate] = useState();
-  const [invoiceDate, setInvoiceDate] = useState();
-  const [lrDate, setLRDate] = useState();
+  const [invoiceDate, setInvoiceDate] = useState('');
+  const [lrDate, setLRDate] = useState('');
+  const [branchCommunication, setBranchCommunication] = useState();
   const [invoiceStatus, setInvoiceStatus] = useState();
-  const [parcelStatus, setParcelStatus] = useState();
   const {userBranchUser} = route.params.data;
+  const [branchCode, setBranchCode] = useState();
 
   const values = userBranchUser.map(ele => ({
     label: ele.branchCode,
     value: ele.branchId,
   }));
+
+  useEffect(() => {
+    if(branches.length == 1) {
+      setBranchCommunication(branches[0].value)
+    }
+    if (values.length == 1) {
+      setBranchCode(values[0].value);
+    }
+
+    if (suppliers.length == 1) {
+      setSupplierCode(suppliers[0].value);
+    }
+
+    if (transporter.length == 1) {
+      setTransportCode(transporter[0].value);
+    }
+
+    if(supplierCommunications.length ==1) {
+      setSupplierCommunication(supplierCommunications[0].value)
+    }
+
+    if(transporterCommunications.length ==1) {
+     setTransportCommunication(transporterCommunications[0].value);
+    }
+
+  }, []);
 
   const filterSupplierCommunications = key => {
     let final = [];
@@ -158,7 +221,7 @@ const Invoice = ({route}) => {
     setTransporters(final);
   };
   const fetchData = () => {
-    const API = `http://test.picktech.in/api/Assignment/GetBranchTSSByUser?userId=${USER_ID}&cmpID=${companyName}`;
+    const API = `http://test.picktech.in/api/Assignment/GetBranchTSSByUser?userId=${USER_ID}&cmpID=${companyId}`;
     axios
       .get(API)
       .then(response => {
@@ -184,6 +247,43 @@ const Invoice = ({route}) => {
     setScreen(false);
     setScreen2(true);
   };
+
+  const addInvoice = values => {
+    const {invoiceNumber,lrNumber} = values;
+    const payload = {
+      Header:{
+        userid:0
+      },
+      Content:{
+        ClientId:clientId,
+        CompanyId:companyId,
+        BranchId:branchCode,
+        BranchCommunicationId:branchCommunication,
+        SupplierId:supplierCode,
+        SupplierCommunicationId:supplierCommunication,
+        TransporterId:transportCode,
+        TransporterCommunicationId:transporterCommunication,
+        InvoiceNumber:invoiceNumber,
+        InvoiceReceivedDate:IRDate,
+        InvoiceDate:Idate,
+        LRNumber:lrNumber,
+        LRDate:LRNdate,
+        NumberOfParcels:parcels,
+        InvoiceStatusId:invoiceStatus
+      }
+    }
+    console.log('payload >>>',payload)
+   axios.post('http://test.picktech.in/api/Transaction/AddInvoice',payload)
+   .then(response => {
+     if(response.status == 200) {
+       Alert.alert('Success',"Invoice Added")
+     } else {
+       Alert.alert("Error","Failed to add Invoice")
+     }
+   })
+   .catch(err => console.log(err.toString()))
+  };
+
   useEffect(() => {
     fetchStatus();
     fetchData();
@@ -193,8 +293,8 @@ const Invoice = ({route}) => {
     <View style={styles.container}>
       <View style={styles.section}>
         <Formik
-          initialValues={{invoiceNumber: '', lrNumber: '', parcels: ''}}
-          onSubmit={values => console.log(values)}>
+          initialValues={{invoiceNumber: '', lrNumber: ''}}
+          onSubmit={values => addInvoice(values)}>
           {({handleSubmit, handleChange}) => (
             <>
               <ScrollView>
@@ -224,7 +324,10 @@ const Invoice = ({route}) => {
                     <Datepicker
                       placeholder="Invoice Received Date"
                       date={invoiceReceiveDate}
-                      onSelect={nextDate => setInvoiceReceiveDate(nextDate)}
+                      onSelect={nextDate => {
+                       setIRDate(convertDate(nextDate));
+                       setInvoiceReceiveDate(nextDate)
+                      }}
                     />
                   </View>
                   <View>
@@ -234,7 +337,11 @@ const Invoice = ({route}) => {
                     <Datepicker
                       placeholder="Invoice Date"
                       date={invoiceDate}
-                      onSelect={nextDate => setInvoiceDate(nextDate)}
+                      onSelect={nextDate => {
+                        const date = convertDate(nextDate);
+                        setIDate(date)
+                        setInvoiceDate(nextDate)
+                      }}
                     />
                   </View>
                   <View>
@@ -244,7 +351,11 @@ const Invoice = ({route}) => {
                     <Datepicker
                       placeholder="LR Date"
                       date={lrDate}
-                      onSelect={nextDate => setLRDate(nextDate)}
+                      onSelect={nextDate => {
+                        const date = convertDate(nextDate);
+                        setLRNdate(date)
+                        setLRDate(nextDate)
+                      }}
                     />
                   </View>
                   <View>
@@ -253,7 +364,7 @@ const Invoice = ({route}) => {
                     </Text>
                     <Input
                       placeholder="Number of parcel"
-                      onChangeText={handleChange('parcels')}
+                      onChangeText={value => setParcels(parseInt(value))}
                     />
                   </View>
                   <View>
@@ -278,10 +389,7 @@ const Invoice = ({route}) => {
                       onChangeItem={value => setParcelStatus(value.value)}
                     />
                   </View> */}
-                  {values.length === 1 ? //     Branch code //    <Text style={styles.text} category="label"> //  <View style={{padding:4}}>
-                  //  </Text>
-                  //  <Text style={{marginLeft:6,marginTop:10}}>{values[0].label}</Text>
-                  //  </View>
+                  {values.length === 1 ? //  </View> //  <Text style={{marginLeft:6,marginTop:10}}>{values[0].label}</Text> //  </Text> //     Branch code //    <Text style={styles.text} category="label"> //  <View style={{padding:4}}>
 
                   null : (
                     <View>
@@ -292,15 +400,12 @@ const Invoice = ({route}) => {
                         values={values}
                         style={{backgroundColor: 'white', color: '#6e6c6c'}}
                         placeholder="Branch Code"
-                        onChangeItem={item => fetchData(item)}
+                        onChangeItem={value => setBranchCode(value.value)}
                       />
                     </View>
                   )}
 
-                  {branches.length === 1 ? //    Branch code //   <Text style={styles.text} category="label"> //   <View style={{padding:4}}>
-                  // </Text>
-                  // <Text style={{marginLeft:6,marginTop:10}}>{branches[0].label}</Text>
-                  // </View>
+                  {branches.length === 1 ? // </View> // <Text style={{marginLeft:6,marginTop:10}}>{branches[0].label}</Text> // </Text> //    Branch code //   <Text style={styles.text} category="label"> //   <View style={{padding:4}}>
                   null : (
                     <View>
                       <Text style={styles.text} category="label">
@@ -310,7 +415,9 @@ const Invoice = ({route}) => {
                         values={branches}
                         style={{backgroundColor: 'white', color: '#6e6c6c'}}
                         placeholder="Branch Communication"
-                        onChangeItem={value => console.log(value.value)}
+                        onChangeItem={value =>
+                          setBranchCommunication(value.value)
+                        }
                       />
                     </View>
                   )}
@@ -323,13 +430,15 @@ const Invoice = ({route}) => {
                         values={suppliers}
                         style={{backgroundColor: 'white', color: '#6e6c6c'}}
                         placeholder="Supplier Code"
-                        onChangeItem={value =>
-                          filterSupplierCommunications(value.value)
-                        }
+                        onChangeItem={value => {
+                          filterSupplierCommunications(value.value);
+                          setSupplierCode(value.value);
+                        }}
                       />
                     </View>
                   )}
-                  {supplierCommunications.length > 0 ? (
+                  {supplierCommunications.length == 1 ||
+                  supplierCommunications.length == 0 ? null : (
                     <View>
                       <Text style={styles.text} category="label">
                         Supplier Communications
@@ -338,10 +447,12 @@ const Invoice = ({route}) => {
                         values={supplierCommunications}
                         style={{backgroundColor: 'white', color: '#6e6c6c'}}
                         placeholder="Supplier Communication"
-                        onChangeItem={value => console.log(value)}
+                        onChangeItem={value =>
+                          setSupplierCommunication(value.value)
+                        }
                       />
                     </View>
-                  ) : null}
+                  )}
                   {transporter.length === 1 ? null : (
                     <View>
                       <Text style={styles.text} category="label">
@@ -351,13 +462,15 @@ const Invoice = ({route}) => {
                         values={transporter}
                         style={{backgroundColor: 'white', color: '#6e6c6c'}}
                         placeholder="Transporter Code"
-                        onChangeItem={value =>
-                          filterTransportCommunications(value.value)
-                        }
+                        onChangeItem={value => {
+                          filterTransportCommunications(value.value);
+                          setTransportCode(value.value);
+                        }}
                       />
                     </View>
                   )}
-                  {transporterCommunications.length === 0 ? null : (
+                  {transporterCommunications.length === 1 ||
+                  transporterCommunications.length == 0 ? null : (
                     <View>
                       <Text style={styles.text} category="label">
                         Transporter Communication
@@ -366,7 +479,9 @@ const Invoice = ({route}) => {
                         values={transporterCommunications}
                         style={{backgroundColor: 'white', color: '#6e6c6c'}}
                         placeholder="Transporter Communication"
-                        onChangeItem={value => console.log(value.value)}
+                        onChangeItem={value =>
+                          setTransportCommunication(value.value)
+                        }
                       />
                     </View>
                   )}

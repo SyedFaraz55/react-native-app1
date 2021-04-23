@@ -14,6 +14,7 @@ const Parcel = ({route}) => {
   const USER_ID = route.params.data.id;
   let branches = []
   let sites = []
+  let transporter = [];
   const [siteCommunications,setSiteCommunications] = useState([]);
   const [date, setDate] = useState('');
   const [siteName,setSiteName] = useState(undefined);
@@ -150,12 +151,12 @@ const Parcel = ({route}) => {
           )}
           <View style={{marginBottom: 20}}>
             <Text style={styles.text} category="label">
-              Site Communication
+              Site Code
             </Text>
             <DropDown
               values={sites}
               style={{backgroundColor: 'white', color: '#6e6c6c'}}
-              placeholder="Site Name"
+              placeholder="Site Code"
               onChangeItem={item => {
                 filterSites(item.value)
                 setSiteName(item.value)
@@ -174,6 +175,7 @@ const Parcel = ({route}) => {
               onChangeItem={item => console.log(item.value)}
             />
           </View>}
+         
           <View style={{marginBottom: 20, width: '90%'}}>
             <Text style={styles.text} category="label">
               LR Number
