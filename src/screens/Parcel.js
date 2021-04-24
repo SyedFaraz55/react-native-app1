@@ -1,32 +1,59 @@
 import React, {useState, useEffect} from 'react';
 
-import {View, StyleSheet, ScrollView, ImageBase} from 'react-native';
+import {View, StyleSheet, ScrollView, ImageBase, Alert} from 'react-native';
 import DropDown from '../components/DropDown';
 import InputText from '../components/InputText';
 import DatePickerComponent from '../components/DatePicker';
 import Button from '../components/Button';
 import colors from '../config/constants/colors';
 import axios from 'axios';
-import {Text} from '@ui-kitten/components';
+import {Text, Datepicker} from '@ui-kitten/components';
 import {setNestedObjectValues} from 'formik';
-import ImagePicker from "react-native-customized-image-picker";
+import ImagePicker from 'react-native-customized-image-picker';
 import ImgToBase64 from 'react-native-image-base64';
+
 
 const Parcel = ({route}) => {
   const USER_ID = route.params.data.id;
+  const {clientId} = route.params.data;
+  const {value: companyId} = route.params.company;
   let branches = [];
   let sites = [];
   let transporter = [];
   const [siteCommunications, setSiteCommunications] = useState([]);
+  const [siteCommunication, setSiteCommunication] = useState();
   const [transporterCommunications, setTransporters] = useState([]);
   const [transporterCommunication, setTransportCommunication] = useState();
-  const [date, setDate] = useState('');
+  const [tCode, setTCode] = useState();
+  const [LRnumber, setLR] = useState('');
+  const [parcels, setNParcels] = useState();
+  const [nPR, setNPR] = useState();
+  const [prDate, setPRDate] = useState();
+  const [parcelStatus, setParcelStatus] = useState();
+  const [branchCommunication, setBranchCommunication] = useState();
+  const [date, setDate] = useState();
   const [siteName, setSiteName] = useState(undefined);
   const [data, setData] = useState([]);
+  const [mDate,setMdate] = useState([]);
   const [status, setStatus] = useState([]);
   const [values, setValues] = useState([]);
-  const [images,setImages] = useState();
+  const [branchCode, setBranchCode] = useState();
+  const [images, setImages] = useState();
   const {userBranchUser} = route.params.data;
+
+  let month = [];
+  month[0] = 'Jan';
+  month[1] = 'Feb';
+  month[2] = 'Mar';
+  month[3] = 'Apr';
+  month[4] = 'May';
+  month[5] = 'Jun';
+  month[6] = 'Jul';
+  month[7] = 'Aug';
+  month[8] = 'Sep';
+  month[9] = 'Oct';
+  month[10] = 'Nov';
+  month[11] = 'Dec';
 
   const branchUser = () => {
     const branchuser = userBranchUser.map(ele => ({
@@ -39,11 +66,11 @@ const Parcel = ({route}) => {
 
   data.forEach(item => {
     item.branchCommunication.map(item => {
+      const {id} = item
       const {
         addressLine1,
         addressLine2,
         cityId,
-        id,
       } = item.communication.address;
       branches.push({
         value: id,
@@ -86,11 +113,11 @@ const Parcel = ({route}) => {
     console.log(result, 'results');
     result.map(item => {
       item.transporter.transporterCommunication.map(item => {
+        const {id} = item;
         const {
           addressLine1,
           addressLine2,
           cityId,
-          id,
         } = item.communication.address;
         final.push({
           value: id,
@@ -98,7 +125,7 @@ const Parcel = ({route}) => {
         });
       });
     });
-
+    console.log('final >', final);
     setTransporters(final);
   };
 
@@ -112,8 +139,8 @@ const Parcel = ({route}) => {
     });
     results.map(item => {
       final = item.site.siteCommunication.map(communication => {
+        const {id} = communication
         const {
-          id,
           addressLine1,
           addressLine2,
           cityId,
@@ -153,17 +180,98 @@ const Parcel = ({route}) => {
       })
       .catch(err => console.log(err));
   };
-
+let allImages = []
   const convertImgToBase = img => {
     
-
     img.map(async image => {
-      const base_img = await ImgToBase64.getBase64String(image.path)
-      setImages(base_img)
-    })
+      const base_img = await ImgToBase64.getBase64String(image.path);
+      allImages.push(base_img);
+    });
+    setImages(allImages)
+  };
+  
 
-  }
-  console.log(images,'image')
+  const convertDate = (date) => {
+    const dateArr = date.toString().split(' ').slice(1, 4);
+    const deg = month.indexOf(dateArr[0]) + 1
+    const zeroDeg = ('0' + deg).slice(-2)  // '04'
+
+    const finalDate = `${dateArr[2]}-${zeroDeg}-${dateArr[1]}`
+ 
+    return finalDate
+    
+  };
+
+  const handleSubmit = () => {
+    // let formValues = {
+    //   BranchId: branchCode,
+    //   BranchCommunicationId: branchCommunication,
+    //   ClientId: clientId,
+    //   CompanyId: companyId,
+    //   TransporterId: tCode,
+    //   TransporterCommunicationId: transporterCommunication,
+    //   SiteId: siteName,
+    //   siteCommunicationId: siteCommunication,
+    //   LRNumber: LRnumber,
+    //   NumberOfParcelsInLR: parcels,
+    //   NumberOfParcelsReceived: nPR,
+    //   ParcelReceivedDate: mDate,
+    //   ParcelStatusId: parcelStatus,
+    // };
+
+    var data = new FormData();
+    data.append('userID', '0');
+    data.append('parcel', `{\n"ClientId":${clientId},\n"CompanyId":${companyId},\n"BranchId":${branchCode},\n"BranchCommunicationId":${branchCommunication},\n"TransporterId":${tCode},\n"TransporterCommunicationId":${transporterCommunication},\n"SiteId":${siteName},\n"SiteCommunicationId":${siteCommunication},\n"LRNumber":"${LRnumber}",\n"NumberOfParcelsInLR":${parcels},\n"NumberOfParcelsReceived":${nPR},\n"ParcelReceivedDate":"${mDate}",\n"ParcelStatusId":${parcelStatus}\n}\n`);
+    // data.append('Attachments',images);
+    images.forEach(image => {
+      data.append('Attachments',image)
+    })
+      console.log('form data >>>',data)
+      
+    var config = {
+      method: 'post',
+      url: 'http://test.picktech.in/api/Transaction/AddParcel',
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Accept: 'application/json',
+      },
+      data: data,
+    };
+
+    axios(config)
+      .then(function (response) {
+        if (response.status == 200) {
+          Alert.alert('Success', "Parcel Added Successfully")
+        }
+      })
+      .catch(function (error) {
+        Alert.alert('Error','Something went Wrong')
+      });
+  };
+  useEffect(() => {
+    if (values.length === 1) {
+      setBranchCode(values[0].value);
+    }
+    if (branches.length === 1) {
+      setBranchCommunication(branches[0].value);
+    }
+
+    if (sites.length === 1) {
+      setSiteName(sites[0].value);
+    }
+
+    if (siteCommunications.length === 1) {
+      setSiteCommunication(siteCommunications[0].value);
+    }
+
+    if (transporter.length === 1) {
+      setTCode(transporter[0].value);
+    }
+    if (transporterCommunications.length == 1) {
+  
+      setTransportCommunication(transporterCommunications[0].value);
+    }
+  });
   useEffect(() => {
     fetchData();
     branchUser();
@@ -182,7 +290,10 @@ const Parcel = ({route}) => {
                 values={values}
                 style={{backgroundColor: 'white', color: '#6e6c6c'}}
                 placeholder="Branch Code"
-                onChangeItem={item => fetchData(item)}
+                onChangeItem={item => {
+                  fetchData(item);
+                  setBranchCode(item.value);
+                }}
               />
             </View>
           )}
@@ -195,7 +306,7 @@ const Parcel = ({route}) => {
                 values={branches}
                 style={{backgroundColor: 'white', color: '#6e6c6c'}}
                 placeholder="Branch Communication"
-                onChangeItem={item => console.log(item.value)}
+                onChangeItem={item => console.log(item,'branch comm')}
               />
             </View>
           )}
@@ -224,7 +335,7 @@ const Parcel = ({route}) => {
                 values={siteCommunications}
                 style={{backgroundColor: 'white', color: '#6e6c6c'}}
                 placeholder="Site Communication"
-                onChangeItem={item => console.log(item.value)}
+                onChangeItem={item => setSiteCommunication(item.value)}
               />
             </View>
           )}
@@ -239,31 +350,27 @@ const Parcel = ({route}) => {
                 style={{backgroundColor: 'white', color: '#6e6c6c'}}
                 placeholder="Transporter Code"
                 onChangeItem={value => {
-                
-                    filterTransportCommunications(value.value);
-                    console.log(value,'transporter code')
-                  
+                  filterTransportCommunications(value.value);
+                  setTCode(value.value);
                 }}
               />
             </View>
           )}
 
-{transporterCommunications.length === 1 ||
-                  transporterCommunications.length == 0 ? null : (
-                    <View>
-                      <Text style={styles.text} category="label">
-                        Transporter Communication
-                      </Text>
-                      <DropDown
-                        values={transporterCommunications}
-                        style={{backgroundColor: 'white', color: '#6e6c6c'}}
-                        placeholder="Transporter Communication"
-                        onChangeItem={value =>
-                          setTransportCommunication(value.value)
-                        }
-                      />
-                    </View>
-                  )}
+          {transporterCommunications.length === 1 ||
+          transporterCommunications.length == 0 ? null : (
+            <View>
+              <Text style={styles.text} category="label">
+                Transporter Communication
+              </Text>
+              <DropDown
+                values={transporterCommunications}
+                style={{backgroundColor: 'white', color: '#6e6c6c'}}
+                placeholder="Transporter Communication"
+                onChangeItem={value => setTransportCommunication(value.value)}
+              />
+            </View>
+          )}
 
           <View style={{marginBottom: 20, width: '90%'}}>
             <Text style={styles.text} category="label">
@@ -272,7 +379,7 @@ const Parcel = ({route}) => {
             <InputText
               placeholder="LR Number"
               style={{backgroundColor: 'white'}}
-              onChangeText={text => console.log(text)}
+              onChangeText={text => setLR(text,'lr')}
             />
           </View>
           <View style={{marginBottom: 20, width: '90%'}}>
@@ -282,7 +389,7 @@ const Parcel = ({route}) => {
             <InputText
               placeholder="Number of Parcels in LR"
               style={{backgroundColor: 'white'}}
-              onChangeText={text => console.log(text)}
+              onChangeText={text => setNParcels(parseInt(text))}
             />
           </View>
           <View style={{marginBottom: 20, width: '90%'}}>
@@ -292,21 +399,21 @@ const Parcel = ({route}) => {
             <InputText
               placeholder="Number of Parcels Received"
               style={{backgroundColor: 'white'}}
-              onChangeText={text => console.log(text)}
+              onChangeText={text => setNPR(parseInt(text))}
             />
           </View>
           <View style={{marginBottom: 20}}>
             <Text style={styles.text} category="label">
               Parcel Received Date
             </Text>
-            <DatePickerComponent
-              date={date}
-              mode="date"
-              onDateChange={date => {
-                setDate(date);
-                console.log(date);
-              }}
-            />
+            <Datepicker
+                      placeholder="Parcel Received Date"
+                      date={date}
+                      onSelect={nextDate => {
+                        setDate(nextDate)
+                       setMdate(convertDate(nextDate))
+                      }}
+                    />
           </View>
           <View style={{marginBottom: 20}}>
             <Text style={styles.text} category="label">
@@ -316,21 +423,28 @@ const Parcel = ({route}) => {
               values={status}
               style={{backgroundColor: 'white', color: '#6e6c6c'}}
               placeholder="Parcel Status"
-              onChangeItem={item => console.log(item.value)}
+              onChangeItem={item => setParcelStatus(item.value)}
             />
           </View>
           <View>
-         <Button title="image" onPress={()=> {
-            ImagePicker.openPicker({
-              multiple: true
-            }).then(images => {
-              convertImgToBase(images);
-            });
-         }} />
+            <Button
+              title="image"
+              onPress={() => {
+                ImagePicker.openPicker({
+                  multiple: true,
+                }).then(images => {
+                  convertImgToBase(images);
+                });
+              }}
+            />
           </View>
         </View>
         <View style={styles.footer}>
-          <Button title="Add Parcel" style={{width: '100%'}} />
+          <Button
+            title="Add Parcel"
+            onPress={handleSubmit}
+            style={{width: '100%'}}
+          />
         </View>
       </ScrollView>
     </View>
