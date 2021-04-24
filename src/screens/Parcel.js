@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 
-import {View, StyleSheet, ScrollView} from 'react-native';
+import {View, StyleSheet, ScrollView, ImageBase} from 'react-native';
 import DropDown from '../components/DropDown';
 import InputText from '../components/InputText';
 import DatePickerComponent from '../components/DatePicker';
@@ -9,20 +9,24 @@ import colors from '../config/constants/colors';
 import axios from 'axios';
 import {Text} from '@ui-kitten/components';
 import {setNestedObjectValues} from 'formik';
+import ImagePicker from "react-native-customized-image-picker";
+import ImgToBase64 from 'react-native-image-base64';
 
 const Parcel = ({route}) => {
   const USER_ID = route.params.data.id;
-  let branches = []
-  let sites = []
+  let branches = [];
+  let sites = [];
   let transporter = [];
-  const [siteCommunications,setSiteCommunications] = useState([]);
+  const [siteCommunications, setSiteCommunications] = useState([]);
+  const [transporterCommunications, setTransporters] = useState([]);
+  const [transporterCommunication, setTransportCommunication] = useState();
   const [date, setDate] = useState('');
-  const [siteName,setSiteName] = useState(undefined);
+  const [siteName, setSiteName] = useState(undefined);
   const [data, setData] = useState([]);
   const [status, setStatus] = useState([]);
   const [values, setValues] = useState([]);
+  const [images,setImages] = useState();
   const {userBranchUser} = route.params.data;
-  
 
   const branchUser = () => {
     const branchuser = userBranchUser.map(ele => ({
@@ -30,26 +34,23 @@ const Parcel = ({route}) => {
       value: ele.branchId,
     }));
 
-    
     setValues(branchuser);
   };
 
-  
-    data.forEach(item => {
-       item.branchCommunication.map(item => {
-        const {
-          addressLine1,
-          addressLine2,
-          cityId,
-          id,
-        } = item.communication.address;
-        branches.push( {
-          value: id,
-          label: addressLine1 + ' ' + addressLine2 + ' ' + cityId,
-        });
+  data.forEach(item => {
+    item.branchCommunication.map(item => {
+      const {
+        addressLine1,
+        addressLine2,
+        cityId,
+        id,
+      } = item.communication.address;
+      branches.push({
+        value: id,
+        label: addressLine1 + ' ' + addressLine2 + ' ' + cityId,
       });
-    })
-
+    });
+  });
 
   data.forEach(item => {
     // for site
@@ -60,32 +61,72 @@ const Parcel = ({route}) => {
         label: code,
       });
     });
+
+    // for transporter
+    item.branchTransporter.map(item => {
+      const {id, code} = item.transporter;
+      transporter.push({
+        value: id,
+        label: code,
+      });
+    });
   });
 
+  const filterTransportCommunications = key => {
+    console.log(key);
+    let final = [];
 
+    let result;
+    data.forEach(item => {
+      result = item.branchTransporter.filter(item => {
+        return item.transporter.id == key;
+      });
+    });
 
+    console.log(result, 'results');
+    result.map(item => {
+      item.transporter.transporterCommunication.map(item => {
+        const {
+          addressLine1,
+          addressLine2,
+          cityId,
+          id,
+        } = item.communication.address;
+        final.push({
+          value: id,
+          label: addressLine1 + ' ' + addressLine2 + ' ' + cityId,
+        });
+      });
+    });
+
+    setTransporters(final);
+  };
 
   const filterSites = key => {
-    let results = []
+    let results = [];
     let final = [];
     data.forEach(item => {
       results = item.branchSite.filter(item => {
-        return item.site.id == key 
-      })
-    })
-   results.map(item => {
-     final = item.site.siteCommunication.map(communication => {
-       
-       const {id,addressLine1,addressLine2,cityId} = communication.communication.address
-       return {
-         value:id,
-         label:addressLine1 + " " + addressLine2 + " "  + cityId
-       }
-     })
-   })
+        return item.site.id == key;
+      });
+    });
+    results.map(item => {
+      final = item.site.siteCommunication.map(communication => {
+        const {
+          id,
+          addressLine1,
+          addressLine2,
+          cityId,
+        } = communication.communication.address;
+        return {
+          value: id,
+          label: addressLine1 + ' ' + addressLine2 + ' ' + cityId,
+        };
+      });
+    });
 
-   setSiteCommunications(final)
-  }
+    setSiteCommunications(final);
+  };
 
   const fetchStatus = () => {
     axios
@@ -113,10 +154,19 @@ const Parcel = ({route}) => {
       .catch(err => console.log(err));
   };
 
+  const convertImgToBase = img => {
+    
+
+    img.map(async image => {
+      const base_img = await ImgToBase64.getBase64String(image.path)
+      setImages(base_img)
+    })
+
+  }
+  console.log(images,'image')
   useEffect(() => {
     fetchData();
     branchUser();
-    
     fetchStatus();
   }, []);
   return (
@@ -158,24 +208,63 @@ const Parcel = ({route}) => {
               style={{backgroundColor: 'white', color: '#6e6c6c'}}
               placeholder="Site Code"
               onChangeItem={item => {
-                filterSites(item.value)
-                setSiteName(item.value)
+                filterSites(item.value);
+                setSiteName(item.value);
               }}
             />
           </View>
-         {siteName === undefined ? null :  siteCommunications.length === 1 ? null : <View style={{marginBottom: 20}}>
-            <Text style={styles.text} category="label">
-              Site Communication
-            </Text>
+          {siteName === undefined ? null : siteCommunications.length ===
+            1 ? null : (
+            <View style={{marginBottom: 20}}>
+              <Text style={styles.text} category="label">
+                Site Communication
+              </Text>
 
-            <DropDown
-              values={siteCommunications}
-              style={{backgroundColor: 'white', color: '#6e6c6c'}}
-              placeholder="Site Communication"
-              onChangeItem={item => console.log(item.value)}
-            />
-          </View>}
-         
+              <DropDown
+                values={siteCommunications}
+                style={{backgroundColor: 'white', color: '#6e6c6c'}}
+                placeholder="Site Communication"
+                onChangeItem={item => console.log(item.value)}
+              />
+            </View>
+          )}
+
+          {transporter.length === 1 ? null : (
+            <View>
+              <Text style={styles.text} category="label">
+                Transporter Code
+              </Text>
+              <DropDown
+                values={transporter}
+                style={{backgroundColor: 'white', color: '#6e6c6c'}}
+                placeholder="Transporter Code"
+                onChangeItem={value => {
+                
+                    filterTransportCommunications(value.value);
+                    console.log(value,'transporter code')
+                  
+                }}
+              />
+            </View>
+          )}
+
+{transporterCommunications.length === 1 ||
+                  transporterCommunications.length == 0 ? null : (
+                    <View>
+                      <Text style={styles.text} category="label">
+                        Transporter Communication
+                      </Text>
+                      <DropDown
+                        values={transporterCommunications}
+                        style={{backgroundColor: 'white', color: '#6e6c6c'}}
+                        placeholder="Transporter Communication"
+                        onChangeItem={value =>
+                          setTransportCommunication(value.value)
+                        }
+                      />
+                    </View>
+                  )}
+
           <View style={{marginBottom: 20, width: '90%'}}>
             <Text style={styles.text} category="label">
               LR Number
@@ -230,7 +319,15 @@ const Parcel = ({route}) => {
               onChangeItem={item => console.log(item.value)}
             />
           </View>
-          
+          <View>
+         <Button title="image" onPress={()=> {
+            ImagePicker.openPicker({
+              multiple: true
+            }).then(images => {
+              convertImgToBase(images);
+            });
+         }} />
+          </View>
         </View>
         <View style={styles.footer}>
           <Button title="Add Parcel" style={{width: '100%'}} />
