@@ -21,7 +21,7 @@ const Invoice = ({route}) => {
   const USER_ID = route.params.data.id;
   const {clientId} = route.params.data
   const {value: companyId, label} = route.params.company;
-
+  console.log(companyId, 'companyId');
   const [data, setData] = useState([]);
   let branches = [];
   let suppliers = [];
@@ -38,22 +38,9 @@ const Invoice = ({route}) => {
   const [IRDate,setIRDate] = useState('')
   const [Idate,setIDate] = useState('');
 
-  let month = [];
-  month[0] = 'Jan';
-  month[1] = 'Feb';
-  month[2] = 'Mar';
-  month[3] = 'Apr';
-  month[4] = 'May';
-  month[5] = 'Jun';
-  month[6] = 'Jul';
-  month[7] = 'Aug';
-  month[8] = 'Sep';
-  month[9] = 'Oct';
-  month[10] = 'Nov';
-  month[11] = 'Dec';
-  // let transporterCommunications = [];
+  let month = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  
 
-  // const [branchCommunication, setBranchCommunication] = useState([]);
 
   data.forEach(item => {
     item.branchCommunication.map(item => {
@@ -77,20 +64,6 @@ const Invoice = ({route}) => {
       });
     });
 
-    // item.branchTransporter.map(item => {
-    //   item.transporter.transporterCommunication.forEach(item => {
-    //     const {
-    //       addressLine1,
-    //       addressLine2,
-    //       cityId,
-    //       id,
-    //     } = item.communication.address;
-    //     transporterCommunications.push({
-    //       value: id,
-    //       label: addressLine1 + ' ' + addressLine2 + ' ' + cityId,
-    //     });
-    //   });
-    // });
   });
 
   const [parcels,setParcels] = useState(0);
@@ -131,36 +104,11 @@ const Invoice = ({route}) => {
   const {userBranchUser} = route.params.data;
   const [branchCode, setBranchCode] = useState();
 
-  const values = userBranchUser.map(ele => ({
-    label: ele.branchCode,
-    value: ele.branchId,
-  }));
+ 
 
-  useEffect(() => {
-    if(branches.length == 1) {
-      setBranchCommunication(branches[0].value)
-    }
-    if (values.length == 1) {
-      setBranchCode(values[0].value);
-    }
-
-    if (suppliers.length == 1) {
-      setSupplierCode(suppliers[0].value);
-    }
-
-    if (transporter.length == 1) {
-      setTransportCode(transporter[0].value);
-    }
-
-    if(supplierCommunications.length ==1) {
-      setSupplierCommunication(supplierCommunications[0].value)
-    }
-
-    if(transporterCommunications.length ==1) {
-     setTransportCommunication(transporterCommunications[0].value);
-    }
-
-  }, []);
+  const values = data.map(ele => {
+  return  Object.assign({},{label:ele.branchCode,value:ele.branchId})
+  })
 
   const filterSupplierCommunications = key => {
     let final = [];
@@ -225,6 +173,7 @@ const Invoice = ({route}) => {
     axios
       .get(API)
       .then(response => {
+        console.log(response, 'here is the data')
         setData(response.data);
       })
       .catch(err => console.log(err));
@@ -298,29 +247,22 @@ const Invoice = ({route}) => {
           {({handleSubmit, handleChange}) => (
             <>
               <ScrollView>
-                <View>
-                  <View>
-                    <Text style={styles.text} category="label">
-                      Invoice number
-                    </Text>
+                <View style={{marginTop:10}}>
+                  <View style={styles.group}>
                     <Input
                       placeholder="Invoice Number"
                       onChangeText={handleChange('invoiceNumber')}
                     />
                   </View>
-                  <View>
-                    <Text style={styles.text} category="label">
-                      LR number
-                    </Text>
+                  <View style={styles.group}>
+                   
                     <Input
                       placeholder="LR Number"
                       onChangeText={handleChange('lrNumber')}
                     />
                   </View>
-                  <View>
-                    <Text style={styles.text} category="label">
-                      Invoice Received Date
-                    </Text>
+                  <View style={styles.group}>
+                
                     <Datepicker
                       placeholder="Invoice Received Date"
                       date={invoiceReceiveDate}
@@ -330,10 +272,10 @@ const Invoice = ({route}) => {
                       }}
                     />
                   </View>
-                  <View>
-                    <Text style={styles.text} category="label">
+                  <View style={styles.group}>
+                    {Idate ? <Text style={styles.text} category="label">
                       Invoice Date
-                    </Text>
+                    </Text>:null}
                     <Datepicker
                       placeholder="Invoice Date"
                       date={invoiceDate}
@@ -344,10 +286,10 @@ const Invoice = ({route}) => {
                       }}
                     />
                   </View>
-                  <View>
-                    <Text style={styles.text} category="label">
+                  <View style={styles.group}>
+                    {lrDate ? <Text style={styles.text} category="label">
                       LR Date
-                    </Text>
+                    </Text>: null}
                     <Datepicker
                       placeholder="LR Date"
                       date={lrDate}
@@ -358,19 +300,15 @@ const Invoice = ({route}) => {
                       }}
                     />
                   </View>
-                  <View>
-                    <Text style={styles.text} category="label">
-                      Number of parcel
-                    </Text>
+                  <View style={styles.group}>
+                
                     <Input
                       placeholder="Number of parcel"
                       onChangeText={value => setParcels(parseInt(value))}
                     />
                   </View>
-                  <View>
-                    <Text style={styles.text} category="label">
-                      Invoice Status
-                    </Text>
+                  <View style={styles.group}>
+                 
                     <DropDown
                       values={status}
                       style={{backgroundColor: 'white', color: '#6e6c6c'}}
@@ -392,10 +330,8 @@ const Invoice = ({route}) => {
                   {values.length === 1 ? //  </View> //  <Text style={{marginLeft:6,marginTop:10}}>{values[0].label}</Text> //  </Text> //     Branch code //    <Text style={styles.text} category="label"> //  <View style={{padding:4}}>
 
                   null : (
-                    <View>
-                      <Text style={styles.text} category="label">
-                        Branch Code
-                      </Text>
+                    <View style={styles.group}>
+                     
                       <DropDown
                         values={values}
                         style={{backgroundColor: 'white', color: '#6e6c6c'}}
@@ -405,9 +341,9 @@ const Invoice = ({route}) => {
                     </View>
                   )}
 
-                  {branches.length === 1 ? // </View> // <Text style={{marginLeft:6,marginTop:10}}>{branches[0].label}</Text> // </Text> //    Branch code //   <Text style={styles.text} category="label"> //   <View style={{padding:4}}>
+                  {branches.length === 4 ? // </View> // <Text style={{marginLeft:6,marginTop:10}}>{branches[0].label}</Text> // </Text> //    Branch code //   <Text style={styles.text} category="label"> //   <View style={{padding:4}}>
                   null : (
-                    <View>
+                    <View style={styles.group}>
                       <Text style={styles.text} category="label">
                         Branch Communication
                       </Text>
@@ -415,17 +351,18 @@ const Invoice = ({route}) => {
                         values={branches}
                         style={{backgroundColor: 'white', color: '#6e6c6c'}}
                         placeholder="Branch Communication"
-                        onChangeItem={value =>
+                        onChangeItem={value => {
+
                           setBranchCommunication(value.value)
+                          console.log('branch Comm >> ', value)
+                        }
                         }
                       />
                     </View>
                   )}
                   {suppliers.length === 1 ? null : (
-                    <View>
-                      <Text style={styles.text} category="label">
-                        Supplier Code
-                      </Text>
+                    <View style={styles.group}>
+                     
                       <DropDown
                         values={suppliers}
                         style={{backgroundColor: 'white', color: '#6e6c6c'}}
@@ -439,10 +376,8 @@ const Invoice = ({route}) => {
                   )}
                   {supplierCommunications.length == 1 ||
                   supplierCommunications.length == 0 ? null : (
-                    <View>
-                      <Text style={styles.text} category="label">
-                        Supplier Communications
-                      </Text>
+                    <View style={styles.group}>
+                    
                       <DropDown
                         values={supplierCommunications}
                         style={{backgroundColor: 'white', color: '#6e6c6c'}}
@@ -454,10 +389,8 @@ const Invoice = ({route}) => {
                     </View>
                   )}
                   {transporter.length === 1 ? null : (
-                    <View>
-                      <Text style={styles.text} category="label">
-                        Transporter Code
-                      </Text>
+                    <View style={styles.group}>
+                    
                       <DropDown
                         values={transporter}
                         style={{backgroundColor: 'white', color: '#6e6c6c'}}
@@ -471,10 +404,8 @@ const Invoice = ({route}) => {
                   )}
                   {transporterCommunications.length === 1 ||
                   transporterCommunications.length == 0 ? null : (
-                    <View>
-                      <Text style={styles.text} category="label">
-                        Transporter Communication
-                      </Text>
+                    <View style={styles.group}>
+                      
                       <DropDown
                         values={transporterCommunications}
                         style={{backgroundColor: 'white', color: '#6e6c6c'}}
@@ -490,7 +421,7 @@ const Invoice = ({route}) => {
                 <View style={styles.footer}>
                   <Button
                     title="Add Invoice"
-                    style={{width: '100%'}}
+                    style={{width: '100%', backgroundColor:"#000", color:"#000"}}
                     onPress={handleSubmit}
                   />
                 </View>
@@ -529,6 +460,10 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     marginTop: 10,
   },
+  group:{
+    marginTop:10,
+    width:"100%"
+  }
 });
 
 export default Invoice;

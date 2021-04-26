@@ -36,7 +36,7 @@ const DashboardView = ({navigation, route}) => {
           Dashboard
         </Text>
         <View style={{marginLeft:50}}>
-        {values.length === 1 ?
+        {values.length  == 1 ?
         <View style={styles.rSec}>
           <Text style={styles.rtop}>Company</Text>
           <Text style={styles.rsub}>{values[0].label}</Text>
@@ -62,25 +62,25 @@ const DashboardView = ({navigation, route}) => {
           onPress={() => {
             navigation.navigate('DashboardView');
           }}>
-          <Feather name="home" size={30} color={colors.primary} />
+          <Feather name="home" size={30} color={colors.white} />
         </TouchableNativeFeedback>
         <TouchableNativeFeedback
           onPress={() => {
             navigation.navigate('Invoice',{data:route.params.data,company:company ?company :  values[0]});
           }}>
-          <IonIcon name="create" size={30} color={colors.primary} />
+          <IonIcon name="create" size={30} color={colors.white} />
         </TouchableNativeFeedback>
         <TouchableNativeFeedback
           onPress={() => {
             navigation.navigate('Parcel',{data:route.params.data,company:company ?company :  values[0]});
           }}>
-          <Feather name="package" size={30} color={colors.primary} />
+          <Feather name="package" size={30} color={colors.white} />
         </TouchableNativeFeedback>
         <TouchableNativeFeedback
           onPress={() => {
             navigation.navigate('Search',{company:company ?company :  values[0]});
           }}>
-          <Feather name="search" size={30} color={colors.primary} />
+          <Feather name="search" size={30} color={colors.white} />
         </TouchableNativeFeedback>
       </View>
     </View>
@@ -90,6 +90,7 @@ const DashboardView = ({navigation, route}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor:"#fff"
   },
   header: {
     flex: 1,
@@ -97,23 +98,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingLeft:20,
     paddingTop:10,
-
+    
   },
   section: {
     flex: 12,
-    backgroundColor: colors.secondary,
+    backgroundColor:"#fff",
     justifyContent: 'center',
     alignItems: 'center',
   },
   footer: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: colors.white,
+    backgroundColor: "#000",
     alignItems: 'center',
     justifyContent: 'space-around',
     padding: 6,
-    borderTopRightRadius: 20,
-    borderTopLeftRadius: 20,
+  
   },
   rSec:{
     flex:1,

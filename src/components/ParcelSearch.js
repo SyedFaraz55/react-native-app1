@@ -28,7 +28,7 @@ export default function ParcelSearch({id}) {
         />
       </View>
       <View style={styles.searchButton}>
-        <Button>Search</Button>
+        <Button style={{backgroundColor:"#000", borderColor:"#000"}}>Search</Button>
       </View>
     </View>
     <ScrollView style={styles.results}>
