@@ -78,7 +78,7 @@ const DashboardView = ({navigation, route}) => {
         </TouchableNativeFeedback>
         <TouchableNativeFeedback
           onPress={() => {
-            navigation.navigate('Search');
+            navigation.navigate('Search',{company:company ?company :  values[0]});
           }}>
           <Feather name="search" size={30} color={colors.primary} />
         </TouchableNativeFeedback>
