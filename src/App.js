@@ -22,7 +22,11 @@ const App = ()=> {
          <Stack.Screen name="Login" options={{headerShown: false}} component={Login} />
          <Stack.Screen name="DashboardView" options={{headerShown: false}} component={DashboardView} />
          <Stack.Screen name="Invoice"  component={Invoice} />
-         <Stack.Screen name="Parcel"  component={Parcel} />
+         <Stack.Screen name="Parcel"  component={Parcel} options={{
+           headerStyle:{
+             backgroundColor:"#E9C46A"
+           }
+         }} />
          <Stack.Screen name="Search"  component={Search} />
        </Stack.Navigator>
      </NavigationContainer>

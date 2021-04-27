@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,11 +11,12 @@ import IonIcon from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import DropDown from '../components/DropDown';
-
+import { Card, Text as TextComponent } from '@ui-kitten/components';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 
 const DashboardView = ({navigation, route}) => {
   const {userCompanyUser} = route.params.data;
-  const [company,setCompany] = useState();
+  const [companyId,setCompany] = useState();
   const values = userCompanyUser.map(ele => (
     {
       label:ele.companyCode,
@@ -25,37 +26,47 @@ const DashboardView = ({navigation, route}) => {
 
 
   
-
-  
-  
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <MaterialIcon name="dashboard" size={30} color={colors.primary} />
-        <Text style={{fontSize: 20, color: '#000', marginLeft: 10}}>
+        <MaterialIcon name="dashboard" size={30} color="black" />
+        <Text style={{fontSize: 20, fontWeight:"700", color: '#000', marginLeft: 10}}>
           Dashboard
         </Text>
-        <View style={{marginLeft:50}}>
-        {values.length  == 1 ?
-        <View style={styles.rSec}>
-          <Text style={styles.rtop}>Company</Text>
-          <Text style={styles.rsub}>{values[0].label}</Text>
-        </View>:<DropDown
+        
+      </View>
+      <View style={{marginLeft:10,marginTop:12}}>
+        <Text style={{fontSize:11, fontWeight:"500",color:"#000",marginBottom:5}}>Compnay</Text>
+       <DropDown
             items={values}
+            defaultValue={values[0].value}
             style={{backgroundColor: "white", color: '#6e6c6c',width:"50%"}}
             placeholder="Select Company"
             onChangeItem={item => setCompany(item)}
-          />}
+          />
         </View>
-      </View>
       <View style={styles.section}>
-        <Image
-          source={require('../res/noData.png')}
-          style={{
-            width: 200,
-            height: 200,
-          }}
-        />
+       <Card style={{backgroundColor:"#292E49", marginTop:15,borderRadius:10}}>
+          <TextComponent category="h6" style={{color:"white"}}>Stock Not Received</TextComponent>
+          <View style={{flexDirection:"row", marginTop:10}}>
+            <Feather name="package" size={20} color="white" />
+            <TextComponent style={{color:"white", marginLeft:10}}>20</TextComponent>
+          </View>
+       </Card>
+       <Card style={{backgroundColor:"#00416A", marginTop:15,borderRadius:10}}>
+          <TextComponent category="h6" style={{color:"white"}}>Invoice Not Received</TextComponent>
+          <View style={{flexDirection:"row",marginTop:10}}>
+            <FontAwesome5 name="file-invoice" size={20} color="white" />
+             <TextComponent style={{color:"white", marginLeft:10}}>20</TextComponent>
+          </View>
+       </Card>
+       <Card style={{backgroundColor:"#0F2027", marginTop:15, borderRadius:10}}>
+          <TextComponent category="h6" style={{color:"white"}}>Parcels exceed max delivery time</TextComponent>
+          <View style={{flexDirection:"row",marginTop:10}}>
+            <MaterialIcon name="access-time" size={20} color="white" />
+             <TextComponent style={{color:"white", marginLeft:10}}>20</TextComponent>
+          </View>
+       </Card>
       </View>
       <View style={styles.footer}>
         <TouchableNativeFeedback
@@ -66,19 +77,19 @@ const DashboardView = ({navigation, route}) => {
         </TouchableNativeFeedback>
         <TouchableNativeFeedback
           onPress={() => {
-            navigation.navigate('Invoice',{data:route.params.data,company:company ?company :  values[0]});
+            navigation.navigate('Invoice',{data:route.params.data,company:companyId ? companyId : values[0]});
           }}>
           <IonIcon name="create" size={30} color={colors.white} />
         </TouchableNativeFeedback>
         <TouchableNativeFeedback
           onPress={() => {
-            navigation.navigate('Parcel',{data:route.params.data,company:company ?company :  values[0]});
+            navigation.navigate('Parcel',{data:route.params.data,company:companyId ? companyId : values[0]});
           }}>
           <Feather name="package" size={30} color={colors.white} />
         </TouchableNativeFeedback>
         <TouchableNativeFeedback
           onPress={() => {
-            navigation.navigate('Search',{company:company ?company :  values[0]});
+            navigation.navigate('Search',{company:companyId ? companyId : values[0]});
           }}>
           <Feather name="search" size={30} color={colors.white} />
         </TouchableNativeFeedback>
@@ -97,14 +108,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingLeft:20,
-    paddingTop:10,
-    
+    padding:10,
+    backgroundColor:"#E9C46A"
   },
   section: {
     flex: 12,
     backgroundColor:"#fff",
-    justifyContent: 'center',
-    alignItems: 'center',
+   padding:10
   },
   footer: {
     flex: 1,

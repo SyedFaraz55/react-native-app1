@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 
-import {View, StyleSheet, ScrollView, ImageBase, Alert} from 'react-native';
+import {View, StyleSheet, ScrollView, ImageBase, Alert,TouchableNativeFeedback} from 'react-native';
 import DropDown from '../components/DropDown';
 import InputText from '../components/InputText';
 import DatePickerComponent from '../components/DatePicker';
@@ -11,13 +11,17 @@ import {Text, Datepicker} from '@ui-kitten/components';
 import {setNestedObjectValues} from 'formik';
 import ImagePicker from 'react-native-customized-image-picker';
 import ImgToBase64 from 'react-native-image-base64';
-
+import Feather from 'react-native-vector-icons/Feather'
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import IonIcon from 'react-native-vector-icons/Ionicons';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 const Parcel = ({route}) => {
   const USER_ID = route.params.data.id;
   const {clientId} = route.params.data;
-  const {value: companyId} = route.params.company;
-  let branches = [];
+  const [company, setCompany] = useState();
+  
+
   let sites = [];
   let transporter = [];
   const [siteCommunications, setSiteCommunications] = useState([]);
@@ -36,9 +40,10 @@ const Parcel = ({route}) => {
   const [data, setData] = useState([]);
   const [mDate,setMdate] = useState([]);
   const [status, setStatus] = useState([]);
-  const [values, setValues] = useState([]);
+
   const [branchCode, setBranchCode] = useState();
-  const [images, setImages] = useState();
+  const [images, setImages] = useState([]);
+  const [branches,setBranches] = useState([]);
   const {userBranchUser} = route.params.data;
 
   let month = [];
@@ -55,29 +60,25 @@ const Parcel = ({route}) => {
   month[10] = 'Nov';
   month[11] = 'Dec';
 
-  const branchUser = () => {
-    const branchuser = userBranchUser.map(ele => ({
-      label: ele.branchCode,
-      value: ele.branchId,
-    }));
-
-    setValues(branchuser);
-  };
-
-  data.forEach(item => {
-    item.branchCommunication.map(item => {
-      const {id} = item
-      const {
-        addressLine1,
-        addressLine2,
-        cityId,
-      } = item.communication.address;
-      branches.push({
-        value: id,
-        label: addressLine1 + ' ' + addressLine2 + ' ' + cityId,
-      });
+  const values = data.map(ele => {
+    return  Object.assign({},{label:ele.branchCode,value:ele.branchId})
     });
-  });
+
+
+  // data.forEach(item => {
+  //   item.branchCommunication.map(item => {
+  //     const {id} = item
+  //     const {
+  //       addressLine1,
+  //       addressLine2,
+  //       cityId,
+  //     } = item.communication.address;
+  //     branches.push({
+  //       value: id,
+  //       label: addressLine1 + ' ' + addressLine2 + ' ' + cityId,
+  //     });
+  //   });
+  // });
 
   data.forEach(item => {
     // for site
@@ -171,12 +172,12 @@ const Parcel = ({route}) => {
 
   const fetchData = () => {
     // make this 7 dynamic
-    const API = `http://test.picktech.in/api/Assignment/GetBranchTSSByUser?userId=${USER_ID}&cmpID=7`;
+    const API = `http://test.picktech.in/api/Assignment/GetBranchTSSByUser?userId=${USER_ID}&cmpID=${route.params.company.value}`;
     axios
       .get(API)
       .then(response => {
         setData(response.data);
-        console.log(response);
+        console.log(response, 'c');
       })
       .catch(err => console.log(err));
   };
@@ -221,11 +222,12 @@ let allImages = []
 
     var data = new FormData();
     data.append('userID', '0');
-    data.append('parcel', `{\n"ClientId":${clientId},\n"CompanyId":${companyId},\n"BranchId":${branchCode},\n"BranchCommunicationId":${branchCommunication},\n"TransporterId":${tCode},\n"TransporterCommunicationId":${transporterCommunication},\n"SiteId":${siteName},\n"SiteCommunicationId":${siteCommunication},\n"LRNumber":"${LRnumber}",\n"NumberOfParcelsInLR":${parcels},\n"NumberOfParcelsReceived":${nPR},\n"ParcelReceivedDate":"${mDate}",\n"ParcelStatusId":${parcelStatus}\n}\n`);
-    // data.append('Attachments',images);
-    images.forEach(image => {
-      data.append('Attachments',image)
-    })
+    data.append('parcel', `{\n"ClientId":${clientId},\n"CompanyId":${company},\n"BranchId":${branchCode},\n"BranchCommunicationId":${branchCommunication},\n"TransporterId":${tCode},\n"TransporterCommunicationId":${transporterCommunication},\n"SiteId":${siteName},\n"SiteCommunicationId":${siteCommunication},\n"LRNumber":"${LRnumber}",\n"NumberOfParcelsInLR":${parcels},\n"NumberOfParcelsReceived":${nPR},\n"ParcelReceivedDate":"${mDate}",\n"ParcelStatusId":${parcelStatus}\n}\n`);
+    if(images.length != 0) {
+      images.forEach(image => {
+        data.append('Attachments',image)
+      })
+    }
       console.log('form data >>>',data)
       
     var config = {
@@ -272,48 +274,85 @@ let allImages = []
       setTransportCommunication(transporterCommunications[0].value);
     }
   });
+  const filterBranchCommunications = key => {
+    const results = []
+    const seen = new Set();
+    const branchCommunication = data.map(item => item.branchCommunication)
+    
+    if(branchCommunication.length == 1) {
+      branchCommunication.map(item => {
+        item.map(item => {
+          const {id} = item
+          const {addressLine1,addressLine2,cityId} = item.communication.address
+          results.push({
+            value:id,
+            label:`${addressLine1} ${addressLine2} ${cityId}`
+          })
+        })
+      })
+      setBranches(results)
+    } else {
+      const filtered = data.filter(id => id.branchId == key)
+      filtered.forEach(item => {
+        item.branchCommunication.map(item => {
+          const {id} = item;
+          const {addressLine1,addressLine2,cityId} = item.communication.address
+          results.push({
+            value:id,
+            label:`${addressLine1} ${addressLine2} ${cityId}`
+          })
+        })
+      })
+      setBranches(results);
+    }
+
+   
+  }
   useEffect(() => {
     fetchData();
-    branchUser();
     fetchStatus();
+    if(values.length ==1) {
+      filterBranchCommunications();
+    }
+  
+    setCompany(route.params.company.value)
   }, []);
+
+  useEffect(() => {
+  filterBranchCommunications(branchCode)
+  }, [branchCode])
+
   return (
     <View style={styles.container}>
       <ScrollView>
         <View style={styles.section}>
           {values.length === 1 ? null : (
-            <View>
-              <Text style={styles.text} category="label">
-                Branch Code
-              </Text>
+            <View style={{marginBottom:20}}>
               <DropDown
                 values={values}
                 style={{backgroundColor: 'white', color: '#6e6c6c'}}
                 placeholder="Branch Code"
                 onChangeItem={item => {
+                  console.log(item)
                   fetchData(item);
                   setBranchCode(item.value);
+                  filterBranchCommunications(item.value)
                 }}
               />
             </View>
           )}
-          {branches.length === 1 ? null : (
+          {branches.length === 1? null : (
             <View style={{marginBottom: 20}}>
-              <Text style={styles.text} category="label">
-                Branch Communication
-              </Text>
               <DropDown
                 values={branches}
                 style={{backgroundColor: 'white', color: '#6e6c6c'}}
                 placeholder="Branch Communication"
-                onChangeItem={item => console.log(item,'branch comm')}
+                onChangeItem={item => setBranchCommunication(item.value)}
               />
             </View>
           )}
           <View style={{marginBottom: 20}}>
-            <Text style={styles.text} category="label">
-              Site Code
-            </Text>
+            
             <DropDown
               values={sites}
               style={{backgroundColor: 'white', color: '#6e6c6c'}}
@@ -341,10 +380,8 @@ let allImages = []
           )}
 
           {transporter.length === 1 ? null : (
-            <View>
-              <Text style={styles.text} category="label">
-                Transporter Code
-              </Text>
+            <View style={{marginBottom:20}}>
+             
               <DropDown
                 values={transporter}
                 style={{backgroundColor: 'white', color: '#6e6c6c'}}
@@ -360,9 +397,7 @@ let allImages = []
           {transporterCommunications.length === 1 ||
           transporterCommunications.length == 0 ? null : (
             <View>
-              <Text style={styles.text} category="label">
-                Transporter Communication
-              </Text>
+            
               <DropDown
                 values={transporterCommunications}
                 style={{backgroundColor: 'white', color: '#6e6c6c'}}
@@ -373,9 +408,7 @@ let allImages = []
           )}
 
           <View style={{marginBottom: 20, width: '90%'}}>
-            <Text style={styles.text} category="label">
-              LR Number
-            </Text>
+          
             <InputText
               placeholder="LR Number"
               style={{backgroundColor: 'white'}}
@@ -383,9 +416,7 @@ let allImages = []
             />
           </View>
           <View style={{marginBottom: 20, width: '90%'}}>
-            <Text style={styles.text} category="label">
-              Number of Parcels in LR
-            </Text>
+          
             <InputText
               placeholder="Number of Parcels in LR"
               style={{backgroundColor: 'white'}}
@@ -393,20 +424,19 @@ let allImages = []
             />
           </View>
           <View style={{marginBottom: 20, width: '90%'}}>
-            <Text style={styles.text} category="label">
-              Number of Parcels Received
-            </Text>
+           
             <InputText
               placeholder="Number of Parcels Received"
               style={{backgroundColor: 'white'}}
               onChangeText={text => setNPR(parseInt(text))}
             />
           </View>
-          <View style={{marginBottom: 20}}>
+          <View style={{marginBottom: 20, width:"90%"}}>
             <Text style={styles.text} category="label">
               Parcel Received Date
             </Text>
             <Datepicker
+            style={{width:"100%"}}
                       placeholder="Parcel Received Date"
                       date={date}
                       onSelect={nextDate => {
@@ -416,9 +446,7 @@ let allImages = []
                     />
           </View>
           <View style={{marginBottom: 20}}>
-            <Text style={styles.text} category="label">
-              Parcel Status
-            </Text>
+           
             <DropDown
               values={status}
               style={{backgroundColor: 'white', color: '#6e6c6c'}}
@@ -426,27 +454,50 @@ let allImages = []
               onChangeItem={item => setParcelStatus(item.value)}
             />
           </View>
-          <View>
-            <Button
-              title="image"
-              onPress={() => {
+          <TouchableOpacity style={{width:"15%", backgroundColor:"#eee", padding:10}} onPress={() => {
                 ImagePicker.openPicker({
                   multiple: true,
                 }).then(images => {
                   convertImgToBase(images);
                 });
-              }}
-            />
-          </View>
+              }}>
+            <Feather name="image" color="black" size={30} />
+          </TouchableOpacity>
         </View>
-        <View style={styles.footer}>
+        <View style={{marginLeft:50}}>
           <Button
             title="Add Parcel"
             onPress={handleSubmit}
-            style={{width: '100%'}}
+            style={{width: '90%', backgroundColor:"#000"}}
           />
         </View>
       </ScrollView>
+      <View style={styles.footer}>
+        <TouchableNativeFeedback
+          onPress={() => {
+            navigation.navigate('DashboardView');
+          }}>
+          <Feather name="home" size={30} color={colors.white} />
+        </TouchableNativeFeedback>
+        <TouchableNativeFeedback
+          onPress={() => {
+            navigation.navigate('Invoice',{data:route.params.data,company:company ?company :  values[0]});
+          }}>
+          <IonIcon name="create" size={30} color={colors.white} />
+        </TouchableNativeFeedback>
+        <TouchableNativeFeedback
+          onPress={() => {
+            navigation.navigate('Parcel',{data:route.params.data,company:company ?company :  values[0]});
+          }}>
+          <Feather name="package" size={30} color={colors.white} />
+        </TouchableNativeFeedback>
+        <TouchableNativeFeedback
+          onPress={() => {
+            navigation.navigate('Search',{company:company ?company :  values[0]});
+          }}>
+          <Feather name="search" size={30} color={colors.white} />
+        </TouchableNativeFeedback>
+      </View>
     </View>
   );
 };
@@ -454,23 +505,27 @@ let allImages = []
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.secondary,
+    backgroundColor:"white",
   },
   section: {
     flex: 8,
     width: '100%',
-    alignItems: 'center',
     paddingTop: 20,
+    alignItems:"center"
   },
-  footer: {
-    flex: 1,
-    padding: 10,
-  },
+
   text: {
     fontSize: 16,
     marginBottom: 4,
     marginLeft: 5,
     marginTop: 10,
+  },
+  footer: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: "#000",
+    alignItems: 'center',
+    justifyContent: 'space-around',
   },
 });
 
