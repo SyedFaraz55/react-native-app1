@@ -1,19 +1,22 @@
 import React, {useEffect, useState} from 'react';
-import {ScrollView, StyleSheet, View} from 'react-native';
-import {TabBar, Tab, Layout, Text, Input, Button,Card} from '@ui-kitten/components';
+import {Alert, ScrollView, StyleSheet, View} from 'react-native';
+import {TabBar, Tab, Layout, Text, Input, Button,Card,Spinner} from '@ui-kitten/components';
 import axios from 'axios';
 export default function InvoiceSearch({id}) {
   const [searchKey,setSearchKey] = useState();
   const [companyId, setCompanyId] = useState();
+  const [isLoading,setLoading] = useState();
+  const [custom,setCustom] = useState([]);
   const [data,setData] = useState([]);
   useEffect(()=> {
     search();
   },[])
 
   const search = async _=> {
-    const API = `http://test.picktech.in/api/Transaction/GetAllInvoicesByCompany?cmpID=${id}`;
+    const API = `https://test.picktech.in/api/Transaction/GetAllInvoicesByCompany?cmpID=${id}`;
     const response = await axios.get(API)
     const json = await response.data;
+    
     const data = json.map(({invoiceNumber,invoiceDate,lrnumber,invoiceStatus,parcelStatus}) =>{
         return {
             invoiceNumber,
@@ -24,7 +27,31 @@ export default function InvoiceSearch({id}) {
         }
     })
     setData(data)
+    setLoading(false)
   }
+
+  const searchInvoice = async () => {
+    const API = `https://test.picktech.in/api/Transaction/GetInvoiceByNumber/?cmpID=${id}&invoiceNumber=${searchKey}`;
+    const response = await axios.get(API)
+    const json = await response.data;
+    if(json.length < 1 ){
+      Alert.alert("Error",`No Invoice found with ${searchKey}`)
+    }
+    const data = json.map(({invoiceNumber,invoiceDate,lrnumber,invoiceStatus,parcelStatus}) =>{
+      return {
+          invoiceNumber,
+          invoiceDate,
+          lrnumber
+      }
+  })
+  setCustom(data)
+   
+  }
+
+  useEffect(() => {
+  setCompanyId(id);
+  setLoading(true)
+  },[])
 
   return (
     <Layout style={styles.container}>
@@ -37,11 +64,29 @@ export default function InvoiceSearch({id}) {
           />
         </View>
         <View style={styles.searchButton}>
-          <Button style={{backgroundColor:"#000", borderColor:"#000"}}>Search</Button>
+          <Button onPress={searchInvoice} style={{backgroundColor:"#000", borderColor:"#000"}}>Search</Button>
         </View>
       </View>
       <ScrollView style={styles.results}>
-        {data.map((invoice,index) => (
+        <View style={{alignItems:"center"}}>
+          {isLoading ? <Spinner size="large" status="warning" />: null}
+        </View>
+        {custom.length > 0 ? custom.map((invoice,index) => (
+               <Card key={index} style={styles.card}>
+                   <View style={styles.cardBody}>
+                     <Text category="label" style={styles.heading}>Invoice Number:</Text>
+                     <Text category="p1"style={styles.value}>{invoice.invoiceNumber}</Text>
+                   </View>
+                   <View style={styles.cardBody}>
+                     <Text category="p1" style={styles.heading}>Invoice Date:</Text>
+                     <Text category="p1"style={styles.value}>{invoice.invoiceDate.split('T')[0]}</Text>
+                   </View>
+                   <View style={styles.cardBody}>
+                     <Text category="p1" style={styles.heading}>LR Number:</Text>
+                     <Text category="p1"style={styles.value}>{invoice.lrnumber}</Text>
+                   </View>
+               </Card>
+        )) : data.map((invoice,index) => (
                <Card key={index} style={styles.card}>
                    <View style={styles.cardBody}>
                      <Text category="label" style={styles.heading}>Invoice Number:</Text>
@@ -65,6 +110,8 @@ export default function InvoiceSearch({id}) {
                    </View>
                </Card>
         ))}
+
+
       </ScrollView>
     </Layout>
   );

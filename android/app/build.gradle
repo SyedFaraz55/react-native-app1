@@ -153,6 +153,12 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+          release {
+      storeFile file('iptracking.keystore')
+      storePassword 'developer'
+      keyAlias 'ipalias'
+      keyPassword 'developer'
+    }
     }
     buildTypes {
         debug {

@@ -14,7 +14,7 @@ import DatePickerComponent from '../components/DatePicker';
 import InputText from '../components/InputText';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import {Formik} from 'formik';
-import {Input, Text, Datepicker, Layout} from '@ui-kitten/components';
+import {Input, Text, Datepicker, Layout, Spinner} from '@ui-kitten/components';
 import axios from 'axios';
 import Feather from 'react-native-vector-icons/Feather'
 
@@ -24,6 +24,7 @@ const Invoice = ({route,navigation}) => {
   const [companyId,setCompanyId] = useState();
   const [data, setData] = useState([]);
   const [branches,setBranches] = useState([]);
+  const [isLoading,setLoading] = useState(false);
   let suppliers = [];
   // let supplierCommunications = [];
   let transporter = [];
@@ -45,6 +46,7 @@ const Invoice = ({route,navigation}) => {
   const [LRNdate,setLRNdate] = useState('');
   const [IRDate,setIRDate] = useState('')
   const [Idate,setIDate] = useState('');
+  let isForm = false;
 
   let month = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   
@@ -160,7 +162,7 @@ const Invoice = ({route,navigation}) => {
     setTransporters(final);
   };
   const fetchData = () => {
-    const API = `http://test.picktech.in/api/Assignment/GetBranchTSSByUser?userId=${USER_ID}&cmpID=${companyId}`;
+    const API = `https://test.picktech.in/api/Assignment/GetBranchTSSByUser?userId=${USER_ID}&cmpID=${companyId}`;
     axios
       .get(API)
       .then(response => {
@@ -171,7 +173,7 @@ const Invoice = ({route,navigation}) => {
   };
   const fetchStatus = () => {
     axios
-      .get('http://test.picktech.in/api/Definition/GetAllStatus')
+      .get('https://test.picktech.in/api/Definition/GetAllStatus')
       .then(response => {
         const values = response.data.map(ele => ({
           label: ele.name,
@@ -242,7 +244,7 @@ useEffect(() => {
   if(transporterCommunications.length == 1) {
     setTransportCommunication(transporterCommunications[0].value)
   }
-},[transportCode])
+},[transportCode,branchCode])
 
 
   const addInvoice = values => {
@@ -270,16 +272,23 @@ useEffect(() => {
       }
     }
     console.log('payload >>>',payload)
-   axios.post('http://test.picktech.in/api/Transaction/AddInvoice',payload)
+    setLoading(true)
+   axios.post('https://test.picktech.in/api/Transaction/AddInvoice',payload)
    .then(response => {
+    if(response.status == 409) {
+      setLoading(false)
+      Alert.alert("Error","Duplicate Entry")
+    } 
      if(response.status == 200) {
+       setLoading(false)
        Alert.alert('Success',"Invoice Added")
        navigation.navigate('DashboardView')
-     } else if(response.status == 409) {
-       Alert.alert("Error","Duplicate Entry")
-     } else{
-       Alert.alert("Error",'Something went wrong')
-     }
+     }  else{
+      setLoading(false)
+      Alert.alert("Error",'Something went wrong')
+    }
+     
+     
    })
    .catch(err => console.log(err.toString()))
   };
@@ -290,6 +299,7 @@ useEffect(() => {
     setCompanyId(route.params.company.value)
     
   }, []);
+  console.log(route.params,'here man')
 
 useEffect(() =>{
   fetchData();
@@ -483,11 +493,11 @@ useEffect(() =>{
                 </View>
 
                 <View style={{marginTop:10}}>
-                  <Button
+                  {isLoading ? <Spinner size="large" status="warning" /> : <Button
                     title="Add Invoice"
                     style={{width: '100%', padding:0, backgroundColor:"#000", color:"#000"}}
                     onPress={handleSubmit}
-                  />
+                  />}
                 </View>
               </ScrollView>
             </>
@@ -509,7 +519,7 @@ useEffect(() =>{
         </TouchableNativeFeedback>
         <TouchableNativeFeedback
           onPress={() => {
-            navigation.navigate('Parcel',{data:route.params.data,company:companyId});
+            navigation.navigate('Parcel',{data:route.params.data,company:companyId ? {value:companyId} : values[0]});
           }}>
           <Feather name="package" size={30} color={colors.white} />
         </TouchableNativeFeedback>

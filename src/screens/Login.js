@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import { create } from 'apisauce'
 import {
   View,
   StyleSheet,
@@ -10,12 +11,18 @@ import {
   Image,
   TouchableOpacity,
 } from 'react-native';
+import {} from 'apisauce';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import colors from '../config/constants/colors';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import {Formik} from 'formik';
 import { Text as TextComponent, Input, Button, Spinner} from '@ui-kitten/components';
 import axios from 'axios';
+
+
+const api = create({
+  baseURL: 'https://test.picktech.in',
+})
 
 const Login = ({navigation}) => {
   const [isLoading,setLoading] = useState(false);
@@ -24,7 +31,7 @@ const Login = ({navigation}) => {
     setLoading(true)
     const {Username, Password, ClientCode} = values;
     
-    axios.post('http://test.picktech.in/api/Account/Authenticate', {
+    axios.post('https://test.picktech.in/api/Account/Authenticate', {
       ClientCode: ClientCode.toUpperCase(),
       Username,
       Password,
@@ -38,6 +45,7 @@ const Login = ({navigation}) => {
       } 
     })
     .catch(function (error) {
+      setLoading(false);
       Alert.alert("Error","Invalid Credentials")
     });
    
@@ -56,7 +64,7 @@ const Login = ({navigation}) => {
       <View style={styles.footer}>
        
         <Formik
-          initialValues={{Username: 'raju', Password: 'raju', ClientCode: 'kusumanchi'}}
+          initialValues={{Username: '', Password: '', ClientCode: ''}}
           onSubmit={values => authenticate(values)}>
           {({handleSubmit, handleChange, errors}) => (
             <>
@@ -79,7 +87,7 @@ const Login = ({navigation}) => {
                 style={{width: '80%', marginBottom: 10}}
                 onChangeText={handleChange('ClientCode')}
               />
-          {isLoading  ? <Spinner status="warning" />:<TouchableOpacity onPress={handleSubmit} >
+          {isLoading  ? <Spinner size="large" status="warning" />:<TouchableOpacity onPress={handleSubmit} >
              <View style={styles.circleButton} >
               <AntDesign name="arrowright" size={30} color="#fff" />
              </View>

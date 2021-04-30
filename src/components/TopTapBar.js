@@ -5,7 +5,7 @@ const TopTabBar = ({ navigation, state }) => (
     <TabBar
       selectedIndex={state.index}
       onSelect={index => navigation.navigate(state.routeNames[index])}>
-      <Tab title='Invoice' style={{borderBottomColor:"#000"}}/>
+      <Tab title='Invoice' />
       <Tab title='Parcels'/>
     </TabBar>
   );  

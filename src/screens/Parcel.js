@@ -7,7 +7,7 @@ import DatePickerComponent from '../components/DatePicker';
 import Button from '../components/Button';
 import colors from '../config/constants/colors';
 import axios from 'axios';
-import {Text, Datepicker} from '@ui-kitten/components';
+import {Text, Datepicker, Spinner} from '@ui-kitten/components';
 import {setNestedObjectValues} from 'formik';
 import ImagePicker from 'react-native-customized-image-picker';
 import ImgToBase64 from 'react-native-image-base64';
@@ -16,13 +16,14 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
-const Parcel = ({route}) => {
+const Parcel = ({route, navigation}) => {
   const USER_ID = route.params.data.id;
   const {clientId} = route.params.data;
   const [company, setCompany] = useState();
   
 
   let sites = [];
+  const [isLoading,setLoading] = useState(false);
   let transporter = [];
   const [siteCommunications, setSiteCommunications] = useState([]);
   const [siteCommunication, setSiteCommunication] = useState();
@@ -46,6 +47,7 @@ const Parcel = ({route}) => {
   const [branches,setBranches] = useState([]);
   const {userBranchUser} = route.params.data;
 
+  console.log(company,'testing bar')
   let month = [];
   month[0] = 'Jan';
   month[1] = 'Feb';
@@ -158,7 +160,7 @@ const Parcel = ({route}) => {
 
   const fetchStatus = () => {
     axios
-      .get('http://test.picktech.in/api/Definition/GetAllStatus')
+      .get('https://test.picktech.in/api/Definition/GetAllStatus')
       .then(response => {
         const values = response.data.map(ele => ({
           label: ele.name,
@@ -172,7 +174,7 @@ const Parcel = ({route}) => {
 
   const fetchData = () => {
     // make this 7 dynamic
-    const API = `http://test.picktech.in/api/Assignment/GetBranchTSSByUser?userId=${USER_ID}&cmpID=${route.params.company.value}`;
+    const API = `https://test.picktech.in/api/Assignment/GetBranchTSSByUser?userId=${USER_ID}&cmpID=${route.params.company.value}`;
     axios
       .get(API)
       .then(response => {
@@ -228,22 +230,25 @@ let allImages = []
         data.append('Attachments',image)
       })
     }
-      console.log('form data >>>',data)
-      
+    console.log('form data >>>',data)
+    
     var config = {
       method: 'post',
-      url: 'http://test.picktech.in/api/Transaction/AddParcel',
+      url: 'https://test.picktech.in/api/Transaction/AddParcel',
       headers: {
         'Content-Type': 'multipart/form-data',
         Accept: 'application/json',
       },
       data: data,
     };
-
+    
+    setLoading(true)
     axios(config)
       .then(function (response) {
         if (response.status == 200) {
+          setLoading(false)
           Alert.alert('Success', "Parcel Added Successfully")
+          navigation.navigate("DashboardView")
         }
       })
       .catch(function (error) {
@@ -324,6 +329,8 @@ let allImages = []
 
   return (
     <View style={styles.container}>
+      
+      <View style={styles.section}>
       <ScrollView>
         <View style={styles.section}>
           {values.length === 1 ? null : (
@@ -407,7 +414,7 @@ let allImages = []
             </View>
           )}
 
-          <View style={{marginBottom: 20, width: '90%'}}>
+          <View style={{marginBottom: 20, width: '100%'}}>
           
             <InputText
               placeholder="LR Number"
@@ -415,7 +422,7 @@ let allImages = []
               onChangeText={text => setLR(text,'lr')}
             />
           </View>
-          <View style={{marginBottom: 20, width: '90%'}}>
+          <View style={{marginBottom: 20, width: '100%'}}>
           
             <InputText
               placeholder="Number of Parcels in LR"
@@ -423,7 +430,7 @@ let allImages = []
               onChangeText={text => setNParcels(parseInt(text))}
             />
           </View>
-          <View style={{marginBottom: 20, width: '90%'}}>
+          <View style={{marginBottom: 20, width: '100%'}}>
            
             <InputText
               placeholder="Number of Parcels Received"
@@ -431,7 +438,7 @@ let allImages = []
               onChangeText={text => setNPR(parseInt(text))}
             />
           </View>
-          <View style={{marginBottom: 20, width:"90%"}}>
+          <View style={{marginBottom: 20, width:"100%"}}>
             <Text style={styles.text} category="label">
               Parcel Received Date
             </Text>
@@ -465,13 +472,15 @@ let allImages = []
           </TouchableOpacity>
         </View>
         <View style={{marginLeft:50}}>
-          <Button
+         {isLoading ? <Spinner style={{marginLeft:50}} status="warning" /> :  <Button
             title="Add Parcel"
             onPress={handleSubmit}
             style={{width: '90%', backgroundColor:"#000"}}
-          />
+          />}
         </View>
       </ScrollView>
+      </View>
+      
       <View style={styles.footer}>
         <TouchableNativeFeedback
           onPress={() => {
@@ -481,23 +490,25 @@ let allImages = []
         </TouchableNativeFeedback>
         <TouchableNativeFeedback
           onPress={() => {
-            navigation.navigate('Invoice',{data:route.params.data,company:company ?company :  values[0]});
+            navigation.navigate('Invoice',{data:route.params.data,company:company ? {value:company} : values[0]});
           }}>
           <IonIcon name="create" size={30} color={colors.white} />
         </TouchableNativeFeedback>
         <TouchableNativeFeedback
           onPress={() => {
-            navigation.navigate('Parcel',{data:route.params.data,company:company ?company :  values[0]});
+            navigation.navigate('Parcel',{data:route.params.data,company:company ? company : values[0]});
           }}>
           <Feather name="package" size={30} color={colors.white} />
         </TouchableNativeFeedback>
         <TouchableNativeFeedback
           onPress={() => {
-            navigation.navigate('Search',{company:company ?company :  values[0]});
+            navigation.navigate('Search',{company:company ? company : values[0]});
           }}>
           <Feather name="search" size={30} color={colors.white} />
         </TouchableNativeFeedback>
       </View>
+      
+      
     </View>
   );
 };
@@ -526,7 +537,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#000",
     alignItems: 'center',
     justifyContent: 'space-around',
-  },
+    padding: 6,
+  }
 });
 
 export default Parcel;

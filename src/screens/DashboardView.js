@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Image,
   TouchableNativeFeedback,
+  ScrollView,
 } from 'react-native';
 import colors from '../config/constants/colors';
 import IonIcon from 'react-native-vector-icons/Ionicons';
@@ -33,41 +34,90 @@ const DashboardView = ({navigation, route}) => {
         <Text style={{fontSize: 20, fontWeight:"700", color: '#000', marginLeft: 10}}>
           Dashboard
         </Text>
-        
-      </View>
-      <View style={{marginLeft:10,marginTop:12}}>
-        <Text style={{fontSize:11, fontWeight:"500",color:"#000",marginBottom:5}}>Compnay</Text>
-       <DropDown
+        <DropDown
             items={values}
             defaultValue={values[0].value}
-            style={{backgroundColor: "white", color: '#6e6c6c',width:"50%"}}
+            style={{backgroundColor: "white", marginLeft:40, color: '#6e6c6c',width:"50%"}}
             placeholder="Select Company"
             onChangeItem={item => setCompany(item)}
           />
-        </View>
+      </View>
+      
       <View style={styles.section}>
-       <Card style={{backgroundColor:"#292E49", marginTop:15,borderRadius:10}}>
+       <ScrollView>
+       <View style={styles.cardComponent}>
+       <View>
+       <Card style={{backgroundColor:"#2a9d8f", marginTop:10,width:190,borderRadius:10}}>
           <TextComponent category="h6" style={{color:"white"}}>Stock Not Received</TextComponent>
           <View style={{flexDirection:"row", marginTop:10}}>
             <Feather name="package" size={20} color="white" />
             <TextComponent style={{color:"white", marginLeft:10}}>20</TextComponent>
           </View>
        </Card>
-       <Card style={{backgroundColor:"#00416A", marginTop:15,borderRadius:10}}>
+       </View>
+       <View>
+       <Card style={{backgroundColor:"#e76f51", width:190, marginTop:10,borderRadius:10}}>
           <TextComponent category="h6" style={{color:"white"}}>Invoice Not Received</TextComponent>
-          <View style={{flexDirection:"row",marginTop:10}}>
-            <FontAwesome5 name="file-invoice" size={20} color="white" />
-             <TextComponent style={{color:"white", marginLeft:10}}>20</TextComponent>
+          <View style={{flexDirection:"row", marginTop:10}}>
+            <Feather name="package" size={20} color="white" />
+            <TextComponent style={{color:"white", marginLeft:10}}>15</TextComponent>
           </View>
        </Card>
-       <Card style={{backgroundColor:"#0F2027", marginTop:15, borderRadius:10}}>
-          <TextComponent category="h6" style={{color:"white"}}>Parcels exceed max delivery time</TextComponent>
-          <View style={{flexDirection:"row",marginTop:10}}>
-            <MaterialIcon name="access-time" size={20} color="white" />
-             <TextComponent style={{color:"white", marginLeft:10}}>20</TextComponent>
+       </View>
+       </View>
+       <View style={styles.cardComponent}>
+       <View>
+       <Card style={{backgroundColor:"#f4a261", marginTop:10,width:190,borderRadius:10}}>
+          <TextComponent category="h6" style={{color:"white"}}>Total Damage Parcels</TextComponent>
+          <View style={{flexDirection:"row", marginTop:10}}>
+            <Feather name="package" size={20} color="white" />
+            <TextComponent style={{color:"white", marginLeft:10}}>20</TextComponent>
           </View>
        </Card>
+       </View>
+       <View>
+       <Card style={{backgroundColor:"#ef476f", width:190, marginTop:10,borderRadius:10}}>
+          <TextComponent category="h6" style={{color:"white"}}>Stock Exceed Delivery time</TextComponent>
+          <View style={{flexDirection:"row", marginTop:10}}>
+            <Feather name="package" size={20} color="white" />
+            <TextComponent style={{color:"white", marginLeft:10}}>15</TextComponent>
+          </View>
+       </Card>
+       </View>
+       </View>
+       <View>
+       <Card style={{backgroundColor:"#2b2d42", marginTop:10,borderRadius:10}}>
+          {/* <TextComponent category="h6" style={{color:"white"}}>Stock Exceed Delivery time</TextComponent> */}
+          <View style={{flexDirection:"row", marginTop:10}}>
+            
+            <TextComponent style={{color:"white"}}>Invoice Received Today: 50</TextComponent>
+          </View>
+          <View style={{flexDirection:"row", marginTop:10}}>
+          <TextComponent style={{color:"white"}}>Invoice Received This Week: 30</TextComponent>
+          </View>
+          <View style={{flexDirection:"row", marginTop:10}}>
+          <TextComponent style={{color:"white"}}>Invoice Received This Month: 10</TextComponent>
+          </View>
+       </Card>
+       </View>
+       <View>
+       <Card style={{backgroundColor:"#3d5a80", marginTop:10,borderRadius:10}}>
+          {/* <TextComponent category="h6" style={{color:"white"}}>Stock Exceed Delivery time</TextComponent> */}
+          <View style={{flexDirection:"row", marginTop:10}}>
+            
+            <TextComponent style={{color:"white"}}>Invoice Received Today: 50</TextComponent>
+          </View>
+          <View style={{flexDirection:"row", marginTop:10}}>
+          <TextComponent style={{color:"white"}}>Invoice Received This Week: 30</TextComponent>
+          </View>
+          <View style={{flexDirection:"row", marginTop:10}}>
+          <TextComponent style={{color:"white"}}>Invoice Received This Month: 10</TextComponent>
+          </View>
+       </Card>
+       </View>
+       </ScrollView>
       </View>
+      
       <View style={styles.footer}>
         <TouchableNativeFeedback
           onPress={() => {
@@ -112,9 +162,14 @@ const styles = StyleSheet.create({
     backgroundColor:"#E9C46A"
   },
   section: {
-    flex: 12,
+    flex: 10,
     backgroundColor:"#fff",
-   padding:10
+    marginTop:50,
+  },
+  cardComponent:{
+
+    flexDirection:"row",
+    justifyContent:"space-around"
   },
   footer: {
     flex: 1,
