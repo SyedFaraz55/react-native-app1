@@ -64,7 +64,7 @@ const Login = ({navigation}) => {
       <View style={styles.footer}>
        
         <Formik
-          initialValues={{Username: '', Password: '', ClientCode: ''}}
+          initialValues={{Username: 'raju', Password: 'raju', ClientCode: 'kusumanchi'}}
           onSubmit={values => authenticate(values)}>
           {({handleSubmit, handleChange, errors}) => (
             <>
