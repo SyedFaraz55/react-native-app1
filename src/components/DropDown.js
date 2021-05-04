@@ -15,6 +15,7 @@ const DropDown = ({style, onChangeItem, values, value, ...otherProps}) => {
         }}
         dropDownStyle={{backgroundColor: colors.white}}
         onChangeItem={onChangeItem}
+        
       />
     </>
   );
