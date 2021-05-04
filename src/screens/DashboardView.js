@@ -6,6 +6,9 @@ import {
   Image,
   TouchableNativeFeedback,
   ScrollView,
+  Modal,
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
 import colors from '../config/constants/colors';
 import IonIcon from 'react-native-vector-icons/Ionicons';
@@ -13,15 +16,17 @@ import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import DropDown from '../components/DropDown';
 import { Card, Text as TextComponent } from '@ui-kitten/components';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
+
 
 const DashboardView = ({navigation, route}) => {
   const {userCompanyUser} = route.params.data;
   const [companyId,setCompany] = useState();
+  const [label,setLabel] = useState();
+  const [modalVisible, setModalVisible] = useState(false);
   const values = userCompanyUser.map(ele => (
     {
       label:ele.companyCode,
-      value:ele.companyId
+      value:ele.companyId 
     }
   ))
 
@@ -34,17 +39,55 @@ const DashboardView = ({navigation, route}) => {
         <Text style={{fontSize: 20, fontWeight:"700", color: '#000', marginLeft: 10}}>
           Dashboard
         </Text>
-        <DropDown
-            items={values}
-            defaultValue={values[0].value}
-            style={{backgroundColor: "white", marginLeft:40, color: '#6e6c6c',width:"50%"}}
-            placeholder="Select Company"
-            onChangeItem={item => setCompany(item)}
-          />
+       <View>
+      <TouchableOpacity style={styles.picker} onPress={() => setModalVisible(true)}>
+        <Text style={{color:"#fff",textAlign:"center"}}>{label ? label : values[0].label}</Text>
+      </TouchableOpacity>
+    <Modal 
+    presentationStyle="pageSheet"
+    style={{backgroundColor:"white"}}
+    visible={modalVisible}
+    animationType="slide"
+    
+    >
+      <View>
+        <View style={{
+          alignItems:"center"
+        }}>
+          <Text style={{
+            fontSize:16,
+            marginVertical:10,
+            color:"#ccc"
+          }}>Select Company</Text>
+        </View>
+        {values.map(item => {
+          return (
+            <TouchableOpacity onPress={() =>{
+              setCompany(item)
+              setModalVisible(false)
+              setLabel(item.label)
+            }} style={{
+            
+            }} key={item.value}>
+              <Text style={{
+                padding:10,
+                borderBottomWidth:1,
+                borderBottomColor:"#eee"
+              }}
+              
+              
+              >{item.label}</Text>
+            </TouchableOpacity>
+          )
+        })}
+      </View>
+    </Modal>
+       </View>
+    
       </View>
       
       <View style={styles.section}>
-       <ScrollView>
+       
        <View style={styles.cardComponent}>
        <View>
        <Card style={{backgroundColor:"#2a9d8f", marginTop:10,width:190,borderRadius:10}}>
@@ -115,7 +158,7 @@ const DashboardView = ({navigation, route}) => {
           </View>
        </Card>
        </View>
-       </ScrollView>
+       
       </View>
       
       <View style={styles.footer}>
@@ -123,25 +166,25 @@ const DashboardView = ({navigation, route}) => {
           onPress={() => {
             navigation.navigate('DashboardView');
           }}>
-          <Feather name="home" size={30} color={colors.white} />
+          <Feather name="home" size={30} color={colors.black} />
         </TouchableNativeFeedback>
         <TouchableNativeFeedback
           onPress={() => {
             navigation.navigate('Invoice',{data:route.params.data,company:companyId ? companyId : values[0]});
           }}>
-          <IonIcon name="create" size={30} color={colors.white} />
+          <IonIcon name="create" size={30} color={colors.black} />
         </TouchableNativeFeedback>
         <TouchableNativeFeedback
           onPress={() => {
             navigation.navigate('Parcel',{data:route.params.data,company:companyId ? companyId : values[0]});
           }}>
-          <Feather name="package" size={30} color={colors.white} />
+          <Feather name="package" size={30} color={colors.black} />
         </TouchableNativeFeedback>
         <TouchableNativeFeedback
           onPress={() => {
             navigation.navigate('Search',{company:companyId ? companyId : values[0]});
           }}>
-          <Feather name="search" size={30} color={colors.white} />
+          <Feather name="search" size={30} color={colors.black} />
         </TouchableNativeFeedback>
       </View>
     </View>
@@ -159,12 +202,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingLeft:20,
     padding:10,
-    backgroundColor:"#E9C46A"
+    backgroundColor:"#E9C46A",
+  
   },
   section: {
-    flex: 10,
+    flex: 12,
     backgroundColor:"#fff",
-    marginTop:50,
+    marginTop:30
   },
   cardComponent:{
 
@@ -174,11 +218,12 @@ const styles = StyleSheet.create({
   footer: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: "#000",
+    backgroundColor: "#fff",
     alignItems: 'center',
     justifyContent: 'space-around',
     padding: 6,
-  
+    borderWidth:1,
+    borderColor:"#ccc"
   },
   rSec:{
     flex:1,
@@ -193,6 +238,24 @@ const styles = StyleSheet.create({
   },
   rsub:{
     
+  },
+  pickerSelect:{
+    flexDirection:"row",
+    backgroundColor:"#fff",
+    width:150,
+    borderRadius:5,
+    marginLeft:80,
+    
+    color:"#ffff",
+    
+  },
+  picker:{
+    marginLeft:100,
+    backgroundColor:"#000",
+    padding:10,
+    borderRadius:10,
+    width:120,
+    textAlign:"center"
   }
 });
 

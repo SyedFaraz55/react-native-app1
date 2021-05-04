@@ -185,11 +185,7 @@ const Invoice = ({route,navigation}) => {
       .catch(err => console.log(err));
   };
 
-  const handleNext = () => {
-    setScreen(false);
-    setScreen2(true);
-  };
-  
+ 
   
   const filterBranchCommunications = key => {
     const results = []
@@ -247,7 +243,7 @@ useEffect(() => {
 },[transportCode,branchCode])
 
 
-  const addInvoice = values => {
+  const addInvoice =  values => {
     const {invoiceNumber,lrNumber} = values;
     const payload = {
       Header:{
@@ -272,25 +268,35 @@ useEffect(() => {
       }
     }
     console.log('payload >>>',payload)
+   
     setLoading(true)
-   axios.post('https://test.picktech.in/api/Transaction/AddInvoice',payload)
-   .then(response => {
-    if(response.status == 409) {
+    if(!branchCode || !branchCommunication || !supplierCode || !supplierCommunication || !transportCode || !invoiceNumber || !IRDate || !Idate || !lrNumber || !LRNdate || !parcels || !invoiceStatus) {
+      Alert.alert("Error", "All Fields are required")
       setLoading(false)
-      Alert.alert("Error","Duplicate Entry")
-    } 
-     if(response.status == 200) {
-       setLoading(false)
-       Alert.alert('Success',"Invoice Added")
-       navigation.navigate('DashboardView')
-     }  else{
-      setLoading(false)
-      Alert.alert("Error",'Something went wrong')
+    } else {
+      setLoading(true)
+      axios.post('https://test.picktech.in/api/Transaction/AddInvoice',payload)
+      .then(response => {
+        if(response.status == 200) {
+          setLoading(false)
+          Alert.alert('Success',"Invoice Added",[{
+            text:"OK",
+            onPress:()=> navigation.navigate('DashboardView')
+          }])
+          
+        }
+        console.log('response >>', response);
+      })
+      .catch(err =>{
+        if(err.toString().includes('409')){
+          setLoading(false)
+          Alert.alert('Error','Duplicate Entry')
+        }
+      })
     }
-     
-     
-   })
-   .catch(err => console.log(err.toString()))
+
+  
+   
   };
 
   useEffect(() => {
@@ -380,8 +386,9 @@ useEffect(() =>{
                   <View style={styles.group}>
                  
                     <DropDown
+
                       values={status}
-                      style={{backgroundColor: 'white', color: '#6e6c6c'}}
+                      style={{backgroundColor: 'white', color: '#6e6c6c', width:"100%"}}
                       placeholder="Invoice Status"
                       onChangeItem={value => setInvoiceStatus(value.value)}
                     />
@@ -493,7 +500,7 @@ useEffect(() =>{
                 </View>
 
                 <View style={{marginTop:10}}>
-                  {isLoading ? <Spinner size="large" status="warning" /> : <Button
+                   {isLoading ? <Spinner size="large" status="warning" /> : <Button
                     title="Add Invoice"
                     style={{width: '100%', padding:0, backgroundColor:"#000", color:"#000"}}
                     onPress={handleSubmit}

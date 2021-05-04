@@ -66,6 +66,10 @@ const Parcel = ({route, navigation}) => {
     return  Object.assign({},{label:ele.branchCode,value:ele.branchId})
     });
 
+    useEffect(() => {
+      console.log(images, 'effect >>>')
+    },[images])
+
 
   // data.forEach(item => {
   //   item.branchCommunication.map(item => {
@@ -206,23 +210,12 @@ let allImages = []
   };
 
   const handleSubmit = () => {
-    // let formValues = {
-    //   BranchId: branchCode,
-    //   BranchCommunicationId: branchCommunication,
-    //   ClientId: clientId,
-    //   CompanyId: companyId,
-    //   TransporterId: tCode,
-    //   TransporterCommunicationId: transporterCommunication,
-    //   SiteId: siteName,
-    //   siteCommunicationId: siteCommunication,
-    //   LRNumber: LRnumber,
-    //   NumberOfParcelsInLR: parcels,
-    //   NumberOfParcelsReceived: nPR,
-    //   ParcelReceivedDate: mDate,
-    //   ParcelStatusId: parcelStatus,
-    // };
 
-    var data = new FormData();
+    console.log(images, 'images here >>>')
+    if(!clientId || !company || !branchCode || !branchCommunication || !tCode || !transporterCommunication || !siteName || !siteCommunication || !LRnumber || !parcels || !nPR || !mDate || !parcelStatus) {
+      Alert.alert("Error","Please fill all the fields")
+    } else {
+      var data = new FormData();
     data.append('userID', '0');
     data.append('parcel', `{\n"ClientId":${clientId},\n"CompanyId":${company},\n"BranchId":${branchCode},\n"BranchCommunicationId":${branchCommunication},\n"TransporterId":${tCode},\n"TransporterCommunicationId":${transporterCommunication},\n"SiteId":${siteName},\n"SiteCommunicationId":${siteCommunication},\n"LRNumber":"${LRnumber}",\n"NumberOfParcelsInLR":${parcels},\n"NumberOfParcelsReceived":${nPR},\n"ParcelReceivedDate":"${mDate}",\n"ParcelStatusId":${parcelStatus}\n}\n`);
     if(images.length != 0) {
@@ -251,10 +244,17 @@ let allImages = []
           navigation.navigate("DashboardView")
         }
       })
-      .catch(function (error) {
-        Alert.alert('Error','Something went Wrong')
+      .catch(function (err) {
+        if(err.toString().includes('409')){
+          setLoading(false)
+          Alert.alert('Error','Duplicate Entry')
+        }
       });
+    }
+
+    
   };
+
   useEffect(() => {
     if (values.length === 1) {
       setBranchCode(values[0].value);
@@ -461,7 +461,9 @@ let allImages = []
               onChangeItem={item => setParcelStatus(item.value)}
             />
           </View>
-          <TouchableOpacity style={{width:"15%", backgroundColor:"#eee", padding:10}} onPress={() => {
+        </View>
+        <View style={{width:"90%", flexDirection:"row"}}>
+         <TouchableOpacity style={{padding:10}} onPress={() => {
                 ImagePicker.openPicker({
                   multiple: true,
                 }).then(images => {
@@ -470,15 +472,27 @@ let allImages = []
               }}>
             <Feather name="image" color="black" size={30} />
           </TouchableOpacity>
-        </View>
-        <View style={{marginLeft:50}}>
+          <TouchableOpacity style={{padding:10}} onPress={() => {
+                ImagePicker.openCamera({
+                  width: 300,
+                  height: 400,
+                  cropping: true
+                }).then(image => {
+                  convertImgToBase(image)
+                });
+              }}>
+            <Feather name="camera" color="black" size={30} />
+          </TouchableOpacity>
+         </View>
+        <View style={{width:"100%"}}>
          {isLoading ? <Spinner style={{marginLeft:50}} status="warning" /> :  <Button
             title="Add Parcel"
             onPress={handleSubmit}
-            style={{width: '90%', backgroundColor:"#000"}}
+            style={{width: '100%', backgroundColor:"#000"}}
           />}
         </View>
-      </ScrollView>
+         </ScrollView>
+      
       </View>
       
       <View style={styles.footer}>
@@ -486,25 +500,25 @@ let allImages = []
           onPress={() => {
             navigation.navigate('DashboardView');
           }}>
-          <Feather name="home" size={30} color={colors.white} />
+          <Feather name="home" size={30} color={colors.black} />
         </TouchableNativeFeedback>
         <TouchableNativeFeedback
           onPress={() => {
             navigation.navigate('Invoice',{data:route.params.data,company:company ? {value:company} : values[0]});
           }}>
-          <IonIcon name="create" size={30} color={colors.white} />
+          <IonIcon name="create" size={30} color={colors.black} />
         </TouchableNativeFeedback>
         <TouchableNativeFeedback
           onPress={() => {
             navigation.navigate('Parcel',{data:route.params.data,company:company ? company : values[0]});
           }}>
-          <Feather name="package" size={30} color={colors.white} />
+          <Feather name="package" size={30} color={colors.black} />
         </TouchableNativeFeedback>
         <TouchableNativeFeedback
           onPress={() => {
             navigation.navigate('Search',{company:company ? company : values[0]});
           }}>
-          <Feather name="search" size={30} color={colors.white} />
+          <Feather name="search" size={30} color={colors.black} />
         </TouchableNativeFeedback>
       </View>
       
@@ -534,10 +548,12 @@ const styles = StyleSheet.create({
   footer: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: "#000",
+    backgroundColor: "#fff",
     alignItems: 'center',
     justifyContent: 'space-around',
     padding: 6,
+    borderWidth:1,
+    borderColor:"#ccc"
   }
 });
 
