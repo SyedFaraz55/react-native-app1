@@ -7,13 +7,13 @@ const { Navigator, Screen } = createMaterialTopTabNavigator();
 
 
 
-const TabNavigator = ({id}) => (
+const TabNavigator = ({id, navigation}) => (
     <Navigator tabBar={props => <TopTabBar {...props}  />}>
       <Screen name='Invoice' component={()=> {
-        return <InvoiceSearch id={id} />
+        return <InvoiceSearch id={id} navigation={navigation} />
       }}/>
       <Screen name='Parcel' component={()=> {
-        return <ParcelSearch id={id} />
+        return <ParcelSearch id={id} navigation={navigation} />
       }}/>
     </Navigator>
   );

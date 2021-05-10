@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet, View} from 'react-native';
+import { StyleSheet, View} from 'react-native';
 import DropDown from '../components/DropDown';
 import InputText from '../components/InputText';
 import colors from '../config/constants/colors';
@@ -7,11 +7,11 @@ import colors from '../config/constants/colors';
 
 import TabNavigator from '../components/TabNavigator'
 
-export default function Search({route}) {
+export default function Search({route, navigation}) {
   const { value } =  route.params.company;
   return (
     
-    <TabNavigator id={value} />
+    <TabNavigator id={value} navigation={navigation} />
   
   );
 }

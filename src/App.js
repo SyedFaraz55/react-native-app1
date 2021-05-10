@@ -8,9 +8,13 @@ import Invoice from './screens/Invoice'
 
 import Parcel from './screens/Parcel';
 import Search from './screens/Search';
+import Edit from './screens/InvoiceView';
+import InvoiceEdit from './screens/InvoiceEdit'
 import * as eva from '@eva-design/eva';
 
 import { ApplicationProvider } from '@ui-kitten/components';
+import ParcelView from './screens/ParcelView';
+import ParcelEdit from './screens/ParcelEdit';
 const Stack  = createStackNavigator();
 
 
@@ -32,6 +36,26 @@ const App = ()=> {
            }
          }} />
          <Stack.Screen name="Search"  component={Search}  options={{
+           headerStyle:{
+             backgroundColor:"#E9C46A"
+           }
+         }} />
+         <Stack.Screen name="InvoiceView"  component={Edit}  options={{
+           headerStyle:{
+             backgroundColor:"#E9C46A"
+           }
+         }} />
+          <Stack.Screen name="parcelView"  component={ParcelView}  options={{
+           headerStyle:{
+             backgroundColor:"#E9C46A"
+           }
+         }} />
+         <Stack.Screen name="InvoiceEdit"  component={InvoiceEdit}  options={{
+           headerStyle:{
+             backgroundColor:"#E9C46A"
+           }
+         }} />
+          <Stack.Screen name="parcelEdit"  component={ParcelEdit}  options={{
            headerStyle:{
              backgroundColor:"#E9C46A"
            }

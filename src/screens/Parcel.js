@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 
-import {View, StyleSheet, ScrollView, ImageBase, Alert,TouchableNativeFeedback} from 'react-native';
+import {View, StyleSheet, ScrollView, ImageBase, Alert,TouchableNativeFeedback, Image} from 'react-native';
 import DropDown from '../components/DropDown';
 import InputText from '../components/InputText';
 import DatePickerComponent from '../components/DatePicker';
@@ -45,6 +45,7 @@ const Parcel = ({route, navigation}) => {
   const [branchCode, setBranchCode] = useState();
   const [images, setImages] = useState([]);
   const [branches,setBranches] = useState([]);
+  const [visibleImages,setDisplayImage] = useState([]);
   const {userBranchUser} = route.params.data;
 
   console.log(company,'testing bar')
@@ -223,6 +224,8 @@ let allImages = []
         data.append('Attachments',image)
       })
     }
+    console.log(images,'images >>>');
+    console.log(allImages, 'all images >>');
     console.log('form data >>>',data)
     
     var config = {
@@ -467,22 +470,33 @@ let allImages = []
                 ImagePicker.openPicker({
                   multiple: true,
                 }).then(images => {
+                  setDisplayImage(images)
+                  console.log(images,'image picker')
                   convertImgToBase(images);
                 });
               }}>
             <Feather name="image" color="black" size={30} />
           </TouchableOpacity>
+          
+          {/* <Image source /> */}
           <TouchableOpacity style={{padding:10}} onPress={() => {
                 ImagePicker.openCamera({
                   width: 300,
                   height: 400,
-                  cropping: true
+                  cropping: false
                 }).then(image => {
+                  setDisplayImage(image)
                   convertImgToBase(image)
                 });
               }}>
             <Feather name="camera" color="black" size={30} />
           </TouchableOpacity>
+          
+         </View>
+         <View style={{flexDirection:"row"}}>
+         {visibleImages.map(image => {
+            return <Image source={{uri:image.path}} style={{width:50, height:50, marginRight:10}} />
+          })}
          </View>
         <View style={{width:"100%"}}>
          {isLoading ? <Spinner style={{marginLeft:50}} status="warning" /> :  <Button
