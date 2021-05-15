@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import { create } from 'apisauce'
 import {
   View,
@@ -12,6 +12,8 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import {} from 'apisauce';
+import Storage from 'react-native-storage';
+import AsyncStorage from '@react-native-community/async-storage';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import colors from '../config/constants/colors';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -24,7 +26,13 @@ const api = create({
   baseURL: 'https://test.picktech.in',
 })
 
+const storage = new Storage({
+  size:1000,
+  storageBackend: AsyncStorage, 
+})
+
 const Login = ({navigation}) => {
+  const [data,setData] = useState();
   const [isLoading,setLoading] = useState(false);
   const authenticate = values => {
 
@@ -41,6 +49,7 @@ const Login = ({navigation}) => {
         const data = response.data;
         console.log(data,'global data')
         setLoading(false);
+        setData(data);
         navigation.navigate("DashboardView",{data})
       } 
     })
@@ -50,6 +59,14 @@ const Login = ({navigation}) => {
     });
    
   };
+
+  useEffect(() => {
+    storage.save({
+      id:"1000",
+      key:"data",
+      data:data ? data : []
+    })
+  },[data])
 
   return (
     <View style={styles.container}>

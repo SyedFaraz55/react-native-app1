@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, TouchableNativeFeedback, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, TouchableNativeFeedback, TouchableOpacity, View, Image} from 'react-native'
 import {Text} from '@ui-kitten/components'
 
 
@@ -19,6 +19,10 @@ export default function ParcelView({navigation,route}) {
          </View>
          
       
+      <View>
+          <Image source={{uri:"https://test.picktech.in/api/Transaction/ViewDamagedImage/?parcelDamagedID=7"}} style={{width:100, height:100}} />
+      </View>
+
         </View>
          <View style={{
             justifyContent:"center",

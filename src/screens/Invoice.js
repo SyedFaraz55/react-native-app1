@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, createContext} from 'react';
 import {
   View,
   StyleSheet,
@@ -7,8 +7,12 @@ import {
   TouchableNativeFeedback,
   Alert,
 } from 'react-native';
+import {convertDate} from '../utils/index'
+import {addInvoice} from '../api/index'
+import Storage from 'react-native-storage';
 import Button from '../components/Button';
 import colors from '../config/constants/colors';
+import UserProfile from '../Context/userProfile';
 import DropDown from '../components/DropDown';
 import DatePickerComponent from '../components/DatePicker';
 import InputText from '../components/InputText';
@@ -17,12 +21,20 @@ import {Formik} from 'formik';
 import {Input, Text, Datepicker, Layout, Spinner} from '@ui-kitten/components';
 import axios from 'axios';
 import Feather from 'react-native-vector-icons/Feather'
+import AsyncStorage from '@react-native-community/async-storage';
+
+
+const storage = new Storage({
+  size: 1000,
+  storageBackend: AsyncStorage,
+});
 
 const Invoice = ({route,navigation}) => {
-  const USER_ID = route.params.data.id;
-  const {clientId} = route.params.data
+  
+
   const [companyId,setCompanyId] = useState();
   const [data, setData] = useState([]);
+  const [ClientId,setId] = useState();
   const [branches,setBranches] = useState([]);
   const [isLoading,setLoading] = useState(false);
   let suppliers = [];
@@ -46,26 +58,7 @@ const Invoice = ({route,navigation}) => {
   const [LRNdate,setLRNdate] = useState('');
   const [IRDate,setIRDate] = useState('')
   const [Idate,setIDate] = useState('');
-  let isForm = false;
-
-  let month = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  
-
-    
-
   const [parcels,setParcels] = useState(0);
-
-  const convertDate = (date) => {
-    const dateArr = date.toString().split(' ').slice(1, 4);
-    const deg = month.indexOf(dateArr[0]) + 1
-    const zeroDeg = ('0' + deg).slice(-2)  // '04'
-
-    const finalDate = `${dateArr[2]}-${zeroDeg}-${dateArr[1]}`
- 
-    return finalDate
-    
-  };
-
 
   data.forEach(item => {
     item.branchSupplier.map(item => {
@@ -101,6 +94,8 @@ const Invoice = ({route,navigation}) => {
   const values = data.map(ele => {
   return  Object.assign({},{label:ele.branchCode,value:ele.branchId})
   })
+
+
 
   const filterSupplierCommunications = key => {
     let final = [];
@@ -161,32 +156,7 @@ const Invoice = ({route,navigation}) => {
 
     setTransporters(final);
   };
-  const fetchData = () => {
-    const API = `https://test.picktech.in/api/Assignment/GetBranchTSSByUser?userId=${USER_ID}&cmpID=${companyId}`;
-    axios
-      .get(API)
-      .then(response => {
-        console.log(response, 'here is the data')
-        setData(response.data);
-      })
-      .catch(err => console.log(err));
-  };
-  const fetchStatus = () => {
-    axios
-      .get('https://test.picktech.in/api/Definition/GetAllStatus')
-      .then(response => {
-        const values = response.data.map(ele => ({
-          label: ele.name,
-          value: ele.id,
-        }));
-
-        setStatus(values);
-      })
-      .catch(err => console.log(err));
-  };
-
  
-  
   const filterBranchCommunications = key => {
     const results = []
     const seen = new Set();
@@ -243,73 +213,58 @@ useEffect(() => {
 },[transportCode,branchCode])
 
 
-  const addInvoice =  values => {
-    const {invoiceNumber,lrNumber} = values;
-    const payload = {
-      Header:{
-        userid:0
-      },
-      Content:{
-        ClientId:clientId,
-        CompanyId:companyId,
-        BranchId:branchCode,
-        BranchCommunicationId:branchCommunication,
-        SupplierId:supplierCode,
-        SupplierCommunicationId:supplierCommunication,
-        TransporterId:transportCode,
-        TransporterCommunicationId:3,
-        InvoiceNumber:invoiceNumber,
-        InvoiceReceivedDate:IRDate,
-        InvoiceDate:Idate,
-        LRNumber:lrNumber,
-        LRDate:LRNdate,
-        NumberOfParcels:parcels,
-        InvoiceStatusId:invoiceStatus
-      }
+const formSubmit = (values)=> {
+  const {invoiceNumber,lrNumber} = values;
+  const payload = {
+    Header:{
+      userid:0
+    },
+    Content:{
+      ClientId:ClientId,
+      CompanyId:companyId,
+      BranchId:branchCode,
+      BranchCommunicationId:branchCommunication,
+      SupplierId:supplierCode,
+      SupplierCommunicationId:supplierCommunication,
+      TransporterId:transportCode,
+      TransporterCommunicationId:3,
+      InvoiceNumber:invoiceNumber,
+      InvoiceReceivedDate:IRDate,
+      InvoiceDate:Idate,
+      LRNumber:lrNumber,
+      LRDate:LRNdate,
+      NumberOfParcels:parcels,
+      InvoiceStatusId:invoiceStatus
     }
-    console.log('payload >>>',payload)
-   
-    setLoading(true)
-    if(!branchCode || !branchCommunication || !supplierCode || !supplierCommunication || !transportCode || !invoiceNumber || !IRDate || !Idate || !lrNumber || !LRNdate || !parcels || !invoiceStatus) {
-      Alert.alert("Error", "All Fields are required")
-      setLoading(false)
-    } else {
-      setLoading(true)
-      axios.post('https://test.picktech.in/api/Transaction/AddInvoice',payload)
-      .then(response => {
-        if(response.status == 200) {
-          setLoading(false)
-          Alert.alert('Success',"Invoice Added",[{
-            text:"OK",
-            onPress:()=> navigation.navigate('DashboardView')
-          }])
-          
-        }
-        console.log('response >>', response);
-      })
-      .catch(err =>{
-        if(err.toString().includes('409')){
-          setLoading(false)
-          Alert.alert('Error','Duplicate Entry')
-        }
-      })
-    }
-
+  }
   
-   
-  };
+  if(!branchCode || !branchCommunication || !supplierCode || !supplierCommunication || !transportCode || !invoiceNumber || !IRDate || !Idate || !lrNumber || !LRNdate || !parcels || !invoiceStatus) {
+    Alert.alert("Error", "All Fields are required")
+    
+  } else {
+    
+    addInvoice(values,payload,navigation);
+  }
+}
+ 
+
+
+  const loadData =async ()=> {
+    const data = await AsyncStorage.getItem('state')
+    const status = await AsyncStorage.getItem('status')
+    setData(JSON.parse(data))
+    setStatus(JSON.parse(status));
+
+  storage.load({id:"1001",key:"company"}).then(company => setCompanyId(company.value))
+  storage.load({id:"1000",key:"data"}).then(data => setId(data.clientId));
+  }
 
   useEffect(() => {
-    fetchStatus();
-    fetchData();
-    setCompanyId(route.params.company.value)
-    
+    loadData()
   }, []);
-  console.log(route.params,'here man')
 
 useEffect(() =>{
-  fetchData();
-
+  loadData();
 }, [companyId])
 
   
@@ -319,7 +274,7 @@ useEffect(() =>{
       <View style={styles.section}>
         <Formik
           initialValues={{invoiceNumber: '', lrNumber: ''}}
-          onSubmit={values => addInvoice(values)}>
+          onSubmit={values => formSubmit(values)}>
           {({handleSubmit, handleChange}) => (
             <>
               <ScrollView>
@@ -580,5 +535,8 @@ const styles = StyleSheet.create({
   
   },
 });
+
+
+
 
 export default Invoice;

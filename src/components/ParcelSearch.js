@@ -25,6 +25,9 @@ export default function ParcelSearch({id,navigation}) {
     const API = `https://test.picktech.in/api/Transaction/GetParcelByLRNumber/?cmpID=${id}&lrNumber=${searchKey}`;
     const response = await axios.get(API)
     const json = await response.data;
+    console.log(
+      json
+    );
     setCustom(json)
     if(json.length  < 1) {
       Alert.alert('Error',`No Parcel Found with ${searchKey}`)

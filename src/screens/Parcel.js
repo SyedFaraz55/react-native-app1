@@ -48,7 +48,7 @@ const Parcel = ({route, navigation}) => {
   const [visibleImages,setDisplayImage] = useState([]);
   const {userBranchUser} = route.params.data;
 
-  console.log(company,'testing bar')
+  
   let month = [];
   month[0] = 'Jan';
   month[1] = 'Feb';
@@ -192,6 +192,7 @@ let allImages = []
   const convertImgToBase = img => {
     
     img.map(async image => {
+      console.log('before base64',image)
       const base_img = await ImgToBase64.getBase64String(image.path);
       allImages.push(base_img);
     });
@@ -212,26 +213,26 @@ let allImages = []
 
   const handleSubmit = () => {
 
-    console.log(images, 'images here >>>')
+    
     if(!clientId || !company || !branchCode || !branchCommunication || !tCode || !transporterCommunication || !siteName || !siteCommunication || !LRnumber || !parcels || !nPR || !mDate || !parcelStatus) {
       Alert.alert("Error","Please fill all the fields")
     } else {
       var data = new FormData();
     data.append('userID', '0');
     data.append('parcel', `{\n"ClientId":${clientId},\n"CompanyId":${company},\n"BranchId":${branchCode},\n"BranchCommunicationId":${branchCommunication},\n"TransporterId":${tCode},\n"TransporterCommunicationId":${transporterCommunication},\n"SiteId":${siteName},\n"SiteCommunicationId":${siteCommunication},\n"LRNumber":"${LRnumber}",\n"NumberOfParcelsInLR":${parcels},\n"NumberOfParcelsReceived":${nPR},\n"ParcelReceivedDate":"${mDate}",\n"ParcelStatusId":${parcelStatus}\n}\n`);
-    if(images.length != 0) {
+    if(images.length > 0) {
       images.forEach(image => {
-        data.append('Attachments',image)
+        console.log(image,'for loop >>')
+        data.append('attachments',image)
       })
     }
-    console.log(images,'images >>>');
-    console.log(allImages, 'all images >>');
+    console.log(images,'images check >>>');
     console.log('form data >>>',data)
     
     var config = {
       method: 'post',
       url: 'https://test.picktech.in/api/Transaction/AddParcel',
-      headers: {
+      headers: {  
         'Content-Type': 'multipart/form-data',
         Accept: 'application/json',
       },
@@ -243,6 +244,7 @@ let allImages = []
       .then(function (response) {
         if (response.status == 200) {
           setLoading(false)
+          console.log(response,'response >>>>')
           Alert.alert('Success', "Parcel Added Successfully")
           navigation.navigate("DashboardView")
         }
