@@ -347,7 +347,7 @@ let allImages = []
                 onChangeItem={item => {
                   console.log(item)
                   fetchData(item);
-                  setBranchCode(item.value);
+                  setBranchCode(item.value); 
                   filterBranchCommunications(item.value)
                 }}
               />

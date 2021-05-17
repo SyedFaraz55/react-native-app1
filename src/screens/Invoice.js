@@ -89,7 +89,7 @@ const Invoice = ({route,navigation}) => {
 
 
 
- 
+ console.log(data,'checling for invoices !')
 
   const values = data.map(ele => {
   return  Object.assign({},{label:ele.branchCode,value:ele.branchId})
