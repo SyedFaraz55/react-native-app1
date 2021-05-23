@@ -8,33 +8,30 @@ import {
   Alert,
 } from 'react-native';
 import {convertDate} from '../utils/index'
-import {addInvoice} from '../api/index'
+import {addInvoice, fetchStatus} from '../api/index'
 import Storage from 'react-native-storage';
 import Button from '../components/Button';
 import colors from '../config/constants/colors';
-import UserProfile from '../Context/userProfile';
 import DropDown from '../components/DropDown';
-import DatePickerComponent from '../components/DatePicker';
-import InputText from '../components/InputText';
-import IonIcon from 'react-native-vector-icons/Ionicons';
+
 import {Formik} from 'formik';
-import {Input, Text, Datepicker, Layout, Spinner} from '@ui-kitten/components';
-import axios from 'axios';
-import Feather from 'react-native-vector-icons/Feather'
+import {Input, Text, Datepicker, Spinner} from '@ui-kitten/components';
+
 import AsyncStorage from '@react-native-community/async-storage';
+import {useStoreState} from 'easy-peasy';
 
 
-const storage = new Storage({
-  size: 1000,
-  storageBackend: AsyncStorage,
-});
-
-const Invoice = ({route,navigation}) => {
+const Invoice = ({navigation}) => {
   
 
-  const [companyId,setCompanyId] = useState();
-  const [data, setData] = useState([]);
-  const [ClientId,setId] = useState();
+  const companyId = useStoreState(state => state.store.company);
+  const Storedata = useStoreState(state => state.store.data);
+ 
+  const data = useStoreState(state => state.store.userData);
+  console.log(companyId,'jusin');
+  console.log(data,'storeuerdat');
+
+ 
   const [branches,setBranches] = useState([]);
   const [isLoading,setLoading] = useState(false);
   let suppliers = [];
@@ -52,13 +49,15 @@ const Invoice = ({route,navigation}) => {
   const [lrDate, setLRDate] = useState('');
   const [branchCommunication, setBranchCommunication] = useState();
   const [invoiceStatus, setInvoiceStatus] = useState();
-  const {userBranchUser} = route.params.data;
+  const {userBranchUser} = data
   const [branchCode, setBranchCode] = useState();
   
   const [LRNdate,setLRNdate] = useState('');
   const [IRDate,setIRDate] = useState('')
   const [Idate,setIDate] = useState('');
   const [parcels,setParcels] = useState(0);
+  const [lrdefault,setlrDefault] =useState("")
+  const [inDefault,setinDefault] =useState("")
 
   data.forEach(item => {
     item.branchSupplier.map(item => {
@@ -220,8 +219,8 @@ const formSubmit = (values)=> {
       userid:0
     },
     Content:{
-      ClientId:ClientId,
-      CompanyId:companyId,
+      ClientId:Storedata.clientId,
+      CompanyId:companyId.value,
       BranchId:branchCode,
       BranchCommunicationId:branchCommunication,
       SupplierId:supplierCode,
@@ -244,33 +243,39 @@ const formSubmit = (values)=> {
   } else {
     
     addInvoice(values,payload,navigation);
+   setInvoiceReceiveDate();
+   setInvoiceDate();
+   setLRDate()
+   setStatus()
+   suppliers=[]
+   transporters = []
+   setParcels("")
+   setlrDefault("")
+   setinDefault("")
+   
+    
   }
 }
  
 
 
   const loadData =async ()=> {
-    const data = await AsyncStorage.getItem('state')
     const status = await AsyncStorage.getItem('status')
-    setData(JSON.parse(data))
     setStatus(JSON.parse(status));
 
-  storage.load({id:"1001",key:"company"}).then(company => setCompanyId(company.value))
-  storage.load({id:"1000",key:"data"}).then(data => setId(data.clientId));
+  // storage.load({id:"1001",key:"companyId"}).then(company => setCompanyId(company.value))
+  // storage.load({id:"1000",key:"data"}).then(data => setId(data.clientId));
   }
 
   useEffect(() => {
-    loadData()
-  }, []);
-
-useEffect(() =>{
-  loadData();
-}, [companyId])
-
+    loadData();
+  },[])
+ 
   
 
   return (
     <View style={styles.container}>
+      <View style={styles.headerTop}><Text style={styles.textTop}>Invoice</Text></View>
       <View style={styles.section}>
         <Formik
           initialValues={{invoiceNumber: '', lrNumber: ''}}
@@ -282,14 +287,22 @@ useEffect(() =>{
                   <View style={styles.group}>
                     <Input
                       placeholder="Invoice Number"
-                      onChangeText={handleChange('invoiceNumber')}
+                      onChangeText={(text) => {
+                        handleChange('invoiceNumber')
+                        setinDefault(text)
+                      }}
+                      value={inDefault}
                     />
                   </View>
                   <View style={styles.group}>
                    
                     <Input
                       placeholder="LR Number"
-                      onChangeText={handleChange('lrNumber')}
+                      onChangeText={(text)=> {
+                        handleChange('lrNumber')
+                        setlrDefault(text)
+                      }}
+                      value={lrdefault}
                     />
                   </View>
                   <View style={styles.group}>
@@ -336,6 +349,7 @@ useEffect(() =>{
                     <Input
                       placeholder="Number of parcel"
                       onChangeText={value => setParcels(parseInt(value))}
+                      value={parcels}
                     />
                   </View>
                   <View style={styles.group}>
@@ -457,7 +471,7 @@ useEffect(() =>{
                 <View style={{marginTop:10}}>
                    {isLoading ? <Spinner size="large" status="warning" /> : <Button
                     title="Add Invoice"
-                    style={{width: '100%', padding:0, backgroundColor:"#000", color:"#000"}}
+                    style={{width: '100%', padding:0, backgroundColor:colors.black}}
                     onPress={handleSubmit}
                   />}
                 </View>
@@ -466,37 +480,19 @@ useEffect(() =>{
           )}
         </Formik>
       </View>
-      <View style={styles.footer}>
-        <TouchableNativeFeedback
-          onPress={() => {
-            navigation.navigate('DashboardView');
-          }}>
-          <Feather name="home" size={30} color={colors.white} />
-        </TouchableNativeFeedback>
-        <TouchableNativeFeedback
-          onPress={() => {
-            navigation.navigate('Invoice',{data:route.params.data});
-          }}>
-          <IonIcon name="create" size={30} color={colors.white} />
-        </TouchableNativeFeedback>
-        <TouchableNativeFeedback
-          onPress={() => {
-            navigation.navigate('Parcel',{data:route.params.data,company:companyId ? {value:companyId} : values[0]});
-          }}>
-          <Feather name="package" size={30} color={colors.white} />
-        </TouchableNativeFeedback>
-        <TouchableNativeFeedback
-          onPress={() => {
-            navigation.navigate('Search',{company:company ?company :  values[0]});
-          }}>
-          <Feather name="search" size={30} color={colors.white} />
-        </TouchableNativeFeedback>
-      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  headerTop:{
+    backgroundColor:colors.yellow,
+    padding:10,
+  },  
+  textTop:{
+    fontSize:20,
+    marginLeft:18
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',

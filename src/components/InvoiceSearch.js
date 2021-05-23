@@ -13,12 +13,20 @@ import colors from '../config/constants/colors';
 import axios from 'axios';
 import Feather from 'react-native-vector-icons/Feather';
 import Card from '../components/Card';
+import Storage from 'react-native-storage';
+import AsyncStorage from '@react-native-community/async-storage'
+
 export default function InvoiceSearch({id, navigation}) {
+  const storage = new Storage({
+    size: 1000,
+    storageBackend: AsyncStorage,
+  });
   const [searchKey, setSearchKey] = useState();
   const [companyId, setCompanyId] = useState();
   const [isLoading, setLoading] = useState();
   const [custom, setCustom] = useState([]);
   const [data, setData] = useState([]);
+
   useEffect(() => {
     // search();
   }, []);
@@ -65,7 +73,7 @@ export default function InvoiceSearch({id, navigation}) {
   };
 
   useEffect(() => {
-    setCompanyId(id);
+    storage.load({id:"1001",key:"companyId"}).then(company => setCompanyId(company.value))
     // setLoading(true);
   }, []);
 

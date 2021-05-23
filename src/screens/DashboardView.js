@@ -8,15 +8,13 @@ import {
   ScrollView,
   Modal,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import Storage from 'react-native-storage';
 import AsyncStorage from '@react-native-community/async-storage';
 import colors from '../config/constants/colors';
-import IonIcon from 'react-native-vector-icons/Ionicons';
+import {useStoreState, useStoreActions} from 'easy-peasy';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-import DropDown from '../components/DropDown';
 import {Card, Text as TextComponent} from '@ui-kitten/components';
 import {fetchData, fetchStatus} from '../api/index';
 
@@ -25,59 +23,62 @@ const storage = new Storage({
   storageBackend: AsyncStorage,
 });
 
-const DashboardView = ({navigation, route}) => {
-  const [data, setData] = useState({});
+const DashboardView = () => {
+  const Storedata = useStoreState(state => state.store.data);
+  const userData = useStoreState(state => state.store.userData);
+  console.log(userData,'ehichs');
+  const [companyId, setCompanyId] = useState(
+    useStoreState(state => state.store.company),
+  );
+  const setCompanyStore = useStoreActions(
+    actions => actions.store.setCompanyStore,
+  );
 
-  const {userCompanyUser} = route.params.data;
-  const [companyId, setCompany] = useState({});
+  const setUserData = useStoreActions(
+    actions => actions.store.setUserData,
+  );
+
+  const [data, setData] = useState([]);
+
   const [label, setLabel] = useState();
   const [modalVisible, setModalVisible] = useState(false);
-  const values = userCompanyUser.map(ele => ({
-    label: ele.companyCode,
-    value: ele.companyId,
-  }));
+  const [values, setValues] = useState([]);
 
+  useEffect(async () => {
+    const values = Storedata.userCompanyUser.map(ele => ({
+      label: ele.companyCode,
+      value: ele.companyId,
+    }));
+    setValues(values);
+    setCompanyId(values[0]);
+    setCompanyStore(values[0]);
+    setLabel(values[0].label);
+    fetchStatus();
+  }, []);
 
+  useEffect(() => {
+    if (data.id) {
+      fetchData(Storedata.id, companyId.value, setUserData);
+    }
 
-  
+  }, [data]);
+
   useEffect(async () => {
     storage.save({
       id: '1001',
-      key: 'company',
-      data: values[0],
-    });
-    const comp = await storage.load({id: '1001', key: 'company'})
-    const compData = await comp;
-    setCompany(compData)
-    
-    
-    const data = storage.load({id: '1000', key: 'data'})
-    const mainData = await data;
-    setData(mainData)
-    fetchStatus();
-  }, []);
-  
-
-  useEffect(() => {
-    if(data.id) {
-      fetchData(data.id,companyId.value)
-    }
-  }, [data])
-
-  useEffect(async () => {
-     storage.save({
-      id: '1001',
-      key: 'company',
+      key: 'companyId',
       data: companyId,
     });
 
-    if(data.id) {
-      fetchData(data.id,companyId.value)
+    if (data.id) {
+      fetchData(Storedata.id, companyId.value, setUserData);
+      
     }
+
+    fetchData(Storedata.id, companyId.value, setUserData);
+    
   }, [companyId]);
-  
-  
-  
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -95,9 +96,7 @@ const DashboardView = ({navigation, route}) => {
           <TouchableOpacity
             style={styles.picker}
             onPress={() => setModalVisible(true)}>
-            <Text style={{color: '#fff', textAlign: 'center'}}>
-              {label ? label : values[0].label}
-            </Text>
+            <Text style={{color: '#fff', textAlign: 'center'}}>{label}</Text>
           </TouchableOpacity>
           <Modal
             presentationStyle="pageSheet"
@@ -122,7 +121,8 @@ const DashboardView = ({navigation, route}) => {
                 return (
                   <TouchableOpacity
                     onPress={() => {
-                      setCompany(item);
+                      setCompanyStore(item);
+                      setCompanyId(item);
                       setModalVisible(false);
                       setLabel(item.label);
                     }}
@@ -276,41 +276,6 @@ const DashboardView = ({navigation, route}) => {
           </Card>
         </View>
       </View>
-
-      <View style={styles.footer}>
-        <TouchableNativeFeedback
-          onPress={() => {
-            navigation.navigate('DashboardView');
-          }}>
-          <Feather name="home" size={30} color={colors.black} />
-        </TouchableNativeFeedback>
-        <TouchableNativeFeedback
-          onPress={() => {
-            navigation.navigate('Invoice', {
-              data: route.params.data,
-              company: companyId ? companyId : values[0],
-            });
-          }}>
-          <IonIcon name="create" size={30} color={colors.black} />
-        </TouchableNativeFeedback>
-        <TouchableNativeFeedback
-          onPress={() => {
-            navigation.navigate('Parcel', {
-              data: route.params.data,
-              company: companyId ? companyId : values[0],
-            });
-          }}>
-          <Feather name="package" size={30} color={colors.black} />
-        </TouchableNativeFeedback>
-        <TouchableNativeFeedback
-          onPress={() => {
-            navigation.navigate('Search', {
-              company: companyId ? companyId : values[0],
-            });
-          }}>
-          <Feather name="search" size={30} color={colors.black} />
-        </TouchableNativeFeedback>
-      </View>
     </View>
   );
 };
@@ -326,7 +291,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingLeft: 20,
     padding: 10,
-    backgroundColor: '#E9C46A',
+    backgroundColor: colors.yellow,
   },
   section: {
     flex: 12,

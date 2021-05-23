@@ -11,7 +11,7 @@ import {
   Image,
   TouchableOpacity,
 } from 'react-native';
-import {} from 'apisauce';
+import {useStoreActions} from 'easy-peasy'
 import Storage from 'react-native-storage';
 import AsyncStorage from '@react-native-community/async-storage';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -32,6 +32,7 @@ const storage = new Storage({
 })
 
 const Login = ({navigation}) => {
+  const addData = useStoreActions(actions => actions.store.addData)
   const [data,setData] = useState();
   const [isLoading,setLoading] = useState(false);
   const authenticate = values => {
@@ -50,7 +51,8 @@ const Login = ({navigation}) => {
         console.log(data,'global data')
         setLoading(false);
         setData(data);
-        navigation.navigate("DashboardView",{data})
+        addData(data)
+        navigation.navigate("DashboardView",{data:data})
       } 
     })
     .catch(function (error) {

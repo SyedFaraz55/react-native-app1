@@ -3,20 +3,14 @@ import Storage from 'react-native-storage';
 import AsyncStorage from '@react-native-community/async-storage';
 import {Alert} from 'react-native'
 
-const storage = new Storage({
-    size: 1000,
-    storageBackend: AsyncStorage,
-  });
   
-  export const fetchData = (userId,companyId) => {
-      
-
-      
+  export const fetchData = (userId,companyId,callback) => {
+      let state = undefined;
     const API = `https://test.picktech.in/api/Assignment/GetBranchTSSByUser?userId=${userId}&cmpID=${companyId}`;
     axios
       .get(API)
       .then(response => {
-        AsyncStorage.setItem('state',JSON.stringify(response.data))
+        callback(response.data)
       })
       .catch(err => console.log(err));
 

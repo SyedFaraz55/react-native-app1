@@ -8,7 +8,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-community/async-storage';
 export default function InvoiceEdit({route}) {
   const {invoiceNumber, invoiceDate, lrnumber} = route.params.data;
-  
+  console.log(route.params.data);
   const [inumber, setInvoiceNumber] = useState(invoiceNumber);
   const [irdate, setInvoiceRDate] = useState(new Date(invoiceDate));
   const [supplierCommunications, setSuppliers] = useState([]);

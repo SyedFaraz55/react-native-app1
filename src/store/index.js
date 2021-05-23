@@ -1,7 +1,5 @@
-import {createStore} from 'redux';
-import reducers from './reducers';
+import {createStore} from 'easy-peasy';
+import storeModel from './storeModel';
+const store = createStore(storeModel)
 
-const store = createStore(reducers);
-
-
-export default store;
+export default store

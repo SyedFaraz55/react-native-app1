@@ -24,6 +24,7 @@
     "@ui-kitten/components": "^5.0.0",
     "apisauce": "^2.0.1",
     "axios": "^0.21.1",
+    "easy-peasy": "^5.0.3",
     "expo-font": "^9.0.0",
     "formik": "^2.2.6",
     "react": "17.0.1",
